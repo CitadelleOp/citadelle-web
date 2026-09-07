@@ -68,7 +68,7 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
       const decimals = Number(tokenDecimals) || 18;
       console.log('Token Decimals:', decimals);
 
-      const marginRequiredNumeric = isSynthetic ? quantity * 500000 : quantity * market.strike;
+      const marginRequiredNumeric = isSynthetic ? quantity * 500 : quantity * market.strike;
       const marginRequired = parseUnits(marginRequiredNumeric.toString(), decimals);
       const premiumWanted = parseUnits(premiumPrice.toString(), decimals);
       const expiryTimestamp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);
@@ -243,7 +243,7 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         <span style={{ color: '#A3A3A3', fontSize: '0.875rem' }}>Ask Premium</span>
         <div style={{ display: 'flex', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', overflow: 'hidden' }}>
           <input type="number" step="0.1" placeholder="e.g. 5" value={premium} onChange={(e) => setPremium(e.target.value)} style={{ width: '80px', textAlign: 'center', backgroundColor: 'transparent', border: 'none', color: '#FFF', outline: 'none', fontFamily: "'Space Mono', monospace" }} />
-          <span style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#A3A3A3', fontSize: '0.75rem' }}>USDC</span>
+          <span style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#A3A3A3', fontSize: '0.75rem' }}>USDG</span>
         </div>
       </div>
 
@@ -254,7 +254,7 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <span style={{ color: '#A3A3A3', fontSize: '0.75rem' }}>Collateral Required</span>
-          <span style={{ color: '#FFF', fontSize: '0.75rem' }}>{((Number(qty) || 0) * (market?.isSynthetic ? 500000 : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {market?.symbol?.split('/')[0]}</span>
+          <span style={{ color: '#FFF', fontSize: '0.75rem' }}>{((Number(qty) || 0) * (market?.isSynthetic ? 500 : market?.strike || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDG</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <span style={{ color: '#A3A3A3', fontSize: '0.75rem' }}>Max profit</span>
