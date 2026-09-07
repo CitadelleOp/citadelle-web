@@ -55,18 +55,30 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
 
       const collateralToken = market.collateralToken as `0x${string}`;
       const isSynthetic = market.isSynthetic;
+
+      // Read token decimals dynamically (USDG = 6, WETH = 18, etc.)
+      console.log('=== WRITE OPTION DEBUG ===');
+      console.log('Reading token decimals...');
+      const tokenDecimals = await publicClient?.readContract({
+        address: collateralToken,
+        abi: ERC20_ABI as any,
+        functionName: 'decimals',
+        args: []
+      } as any) as number;
+      const decimals = Number(tokenDecimals) || 18;
+      console.log('Token Decimals:', decimals);
+
       const marginRequiredNumeric = isSynthetic ? quantity * 500000 : quantity * market.strike;
-      const marginRequired = parseUnits(marginRequiredNumeric.toString(), 18);
-      const premiumWanted = parseUnits(premiumPrice.toString(), 18);
+      const marginRequired = parseUnits(marginRequiredNumeric.toString(), decimals);
+      const premiumWanted = parseUnits(premiumPrice.toString(), decimals);
       const expiryTimestamp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);
 
-      console.log('=== WRITE OPTION DEBUG ===');
       console.log('Collateral Token:', collateralToken);
       console.log('Engine Contract:', ENGINE_CONTRACT_ADDRESS);
       console.log('User Address:', address);
       console.log('Chain ID (wallet):', chainId, '| Chain ID (target):', targetChainId);
-      console.log('Margin Required:', formatUnits(marginRequired, 18), 'tokens');
-      console.log('Premium Wanted:', formatUnits(premiumWanted, 18), 'tokens');
+      console.log('Margin Required:', formatUnits(marginRequired, decimals), 'tokens');
+      console.log('Premium Wanted:', formatUnits(premiumWanted, decimals), 'tokens');
 
       // === STEP 0: Check user balance FIRST ===
       console.log('\n[Step 0] Checking user token balance...');
@@ -77,12 +89,12 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         args: [address]
       } as any) as bigint;
       
-      console.log('User Balance:', formatUnits(userBalance || 0n, 18), 'tokens');
-      console.log('Required:', formatUnits(marginRequired, 18), 'tokens');
+      console.log('User Balance:', formatUnits(userBalance || 0n, decimals), 'tokens');
+      console.log('Required:', formatUnits(marginRequired, decimals), 'tokens');
       
       if (!userBalance || userBalance < marginRequired) {
         throw new Error(
-          `Insufficient token balance. You have ${formatUnits(userBalance || 0n, 18)} but need ${formatUnits(marginRequired, 18)} tokens to write this option. Please fund your wallet with the collateral token first.`
+          `Insufficient token balance. You have ${formatUnits(userBalance || 0n, decimals)} but need ${formatUnits(marginRequired, decimals)} tokens to write this option. Please fund your wallet with the collateral token first.`
         );
       }
       console.log('✅ Balance sufficient!');
@@ -96,8 +108,8 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         args: [address, ENGINE_CONTRACT_ADDRESS]
       } as any) as bigint;
 
-      console.log('Current Allowance:', formatUnits(currentAllowance || 0n, 18));
-      console.log('Needed:', formatUnits(marginRequired, 18));
+      console.log('Current Allowance:', formatUnits(currentAllowance || 0n, decimals));
+      console.log('Needed:', formatUnits(marginRequired, decimals));
 
       if (!currentAllowance || currentAllowance < marginRequired) {
         console.log('⚠️ Allowance insufficient. Requesting approval...');
@@ -163,7 +175,7 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         args: [
           collateralToken,
           market.symbol,
-          parseUnits(market.strike.toString(), 18),
+          parseUnits(market.strike.toString(), decimals),
           BigInt(expiryTimestamp),
           marginRequired,
           premiumWanted

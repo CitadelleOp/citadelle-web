@@ -68,14 +68,25 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
       const writerAddress = data.data.writer;
       console.log('Found writer:', writerAddress);
 
-      const premiumWanted = parseUnits(premiumPerOption.toString(), 18);
+      // Read token decimals dynamically (USDG = 6, WETH = 18, etc.)
+      console.log('Reading token decimals...');
+      const tokenDecimals = await publicClient?.readContract({
+        address: collateralToken,
+        abi: ERC20_ABI as any,
+        functionName: 'decimals',
+        args: []
+      } as any) as number;
+      const decimals = Number(tokenDecimals) || 18;
+      console.log('Token Decimals:', decimals);
+
+      const premiumWanted = parseUnits(premiumPerOption.toString(), decimals);
       const expiryTimestamp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);
 
       console.log('Collateral Token:', collateralToken);
       console.log('Engine Contract:', ENGINE_CONTRACT_ADDRESS);
       console.log('User Address:', address);
       console.log('Chain ID (wallet):', chainId, '| Chain ID (target):', targetChainId);
-      console.log('Premium:', formatUnits(premiumWanted, 18), 'tokens');
+      console.log('Premium:', formatUnits(premiumWanted, decimals), 'tokens');
 
       // === STEP 0: Check user balance FIRST ===
       console.log('\n[Step 0] Checking user token balance...');
@@ -86,12 +97,12 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
         args: [address]
       } as any) as bigint;
 
-      console.log('User Balance:', formatUnits(userBalance || 0n, 18), 'tokens');
-      console.log('Required (premium):', formatUnits(premiumWanted, 18), 'tokens');
+      console.log('User Balance:', formatUnits(userBalance || 0n, decimals), 'tokens');
+      console.log('Required (premium):', formatUnits(premiumWanted, decimals), 'tokens');
 
       if (!userBalance || userBalance < premiumWanted) {
         throw new Error(
-          `Insufficient token balance. You have ${formatUnits(userBalance || 0n, 18)} but need ${formatUnits(premiumWanted, 18)} tokens to pay the premium. Please fund your wallet with the collateral token first.`
+          `Insufficient token balance. You have ${formatUnits(userBalance || 0n, decimals)} but need ${formatUnits(premiumWanted, decimals)} tokens to pay the premium. Please fund your wallet with the collateral token first.`
         );
       }
       console.log('✅ Balance sufficient!');
@@ -105,8 +116,8 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
         args: [address, ENGINE_CONTRACT_ADDRESS]
       } as any) as bigint;
 
-      console.log('Current Allowance:', formatUnits(currentAllowance || 0n, 18));
-      console.log('Needed:', formatUnits(premiumWanted, 18));
+      console.log('Current Allowance:', formatUnits(currentAllowance || 0n, decimals));
+      console.log('Needed:', formatUnits(premiumWanted, decimals));
 
       if (!currentAllowance || currentAllowance < premiumWanted) {
         console.log('⚠️ Allowance insufficient. Requesting approval...');
@@ -173,7 +184,7 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
           writerAddress as `0x${string}`,
           collateralToken,
           market.symbol,
-          parseUnits(market.strike.toString(), 18),
+          parseUnits(market.strike.toString(), decimals),
           BigInt(expiryTimestamp),
           premiumWanted
         ]
