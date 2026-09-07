@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import type { FC } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
+import { parseUnits } from 'viem';
 
 import { TxModal } from '../common/TxModal';
+import { useNetwork } from '../../contexts/NetworkContext';
+import { citadelleNetwork } from '../../providers/WalletContextProvider';
+import { ENGINE_CONTRACT_ADDRESS, OPTIONS_ENGINE_ABI, ERC20_ABI } from '../../lib/contracts';
 
 interface BuyOptionProps {
   market: any | null;
@@ -19,7 +23,9 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
     message: '',
   });
   
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+  const { apiUrl, network } = useNetwork();
 
   const premiumPerOption = market && market.premiumAsk ? market.premiumAsk : 0;
   const quantity = parseFloat(qty) || 0;
@@ -31,7 +37,7 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
       setModalState({ isOpen: true, type: 'error', title: 'Invalid Input', message: 'Please enter a valid quantity.' });
       return;
     }
-    if (!isConnected) {
+    if (!isConnected || !address) {
       setModalState({ isOpen: true, type: 'error', title: 'Wallet Not Connected', message: 'Please connect your wallet first.' });
       return;
     }
@@ -40,17 +46,57 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
     try {
       if (!market) throw new Error("No market selected.");
 
-      // TODO: Replace with Wagmi useWriteContract once EVM contracts are ready
-      await new Promise(r => setTimeout(r, 1500));
-      const signature = '0xDummyTransactionSignature';
+      // Fetch writer address
+      console.log('Fetching available writer for market:', market.id);
+      const res = await fetch(`${apiUrl}/markets/${market.id}/writers?network=${network}`);
+      const data = await res.json();
+      if (!data.success || !data.data || !data.data.writer) {
+        throw new Error("No available writers for this market right now.");
+      }
+      const writerAddress = data.data.writer;
+      console.log('Found writer:', writerAddress);
+
+      const premiumWanted = parseUnits(premiumPerOption.toString(), 18);
+      // Wait! Expiry is a string 'dd/mm/yyyy'. We need timestamp.
+      const expiryTimestamp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);
+
+      // 1. Approve ERC20 (Premium)
+      console.log('Requesting ERC20 Approval...');
+      const approveHash = await writeContractAsync({
+        account: address as `0x${string}`,
+        chain: citadelleNetwork,
+        address: market.collateralToken as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: 'approve',
+        args: [ENGINE_CONTRACT_ADDRESS, premiumWanted]
+      });
+      console.log('Approval Hash:', approveHash);
+
+      // 2. Buy Option
+      console.log('Buying Option...');
+      const txHash = await writeContractAsync({
+        account: address as `0x${string}`,
+        chain: citadelleNetwork,
+        address: ENGINE_CONTRACT_ADDRESS,
+        abi: OPTIONS_ENGINE_ABI,
+        functionName: 'buyOption',
+        args: [
+          writerAddress as `0x${string}`,
+          market.collateralToken as `0x${string}`,
+          market.symbol,
+          parseUnits(market.strike.toString(), 18),
+          BigInt(expiryTimestamp),
+          premiumWanted
+        ]
+      });
       
-      console.log('✅ Transaction successful! TX Signature:', signature);
+      console.log('✅ Transaction successful! TX Hash:', txHash);
       setModalState({ 
         isOpen: true, 
         type: 'success', 
         title: 'Transaction Successful', 
         message: 'Your option has been successfully purchased!', 
-        txSignature: signature 
+        txSignature: txHash 
       });
       setQty('');
     } catch (err: any) {
@@ -59,7 +105,7 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
         isOpen: true, 
         type: 'error', 
         title: 'Transaction Failed', 
-        message: 'Transaction failed!' 
+        message: err.shortMessage || err.message || 'Transaction failed!' 
       });
     } finally {
       setLoading(false);

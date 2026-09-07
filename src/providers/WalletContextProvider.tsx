@@ -1,15 +1,27 @@
 import type { FC, ReactNode } from 'react';
 import { WagmiProvider, createConfig, http } from 'wagmi';
-import { mainnet, sepolia } from 'wagmi/chains';
+import { type Chain } from 'viem';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+export const citadelleNetwork = {
+  id: Number(import.meta.env.VITE_NETWORK_ID) as number,
+  name: import.meta.env.VITE_NETWORK_NAME as string,
+  nativeCurrency: { name: 'RBH', symbol: 'RBH', decimals: 18 },
+  rpcUrls: {
+    default: { http: [import.meta.env.VITE_NETWORK_RPC as string] },
+    public: { http: [import.meta.env.VITE_NETWORK_RPC as string] },
+  },
+  blockExplorers: {
+    default: { name: 'Explorer', url: import.meta.env.VITE_EXPLORER_URL as string },
+  },
+} as const satisfies Chain;
 
 const queryClient = new QueryClient();
 
 const config = createConfig({
-  chains: [mainnet, sepolia],
+  chains: [citadelleNetwork],
   transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
+    [citadelleNetwork.id]: http(),
   },
 });
 
