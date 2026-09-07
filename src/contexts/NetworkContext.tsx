@@ -15,7 +15,7 @@ const NetworkContext = createContext<NetworkContextState | undefined>(undefined)
 export const NetworkProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [network, setNetworkState] = useState<NetworkType>(() => {
     const saved = localStorage.getItem('citadelle-network');
-    return (saved as NetworkType) || 'testnet';
+    return (saved as NetworkType) || 'mainnet';
   });
 
   useEffect(() => {

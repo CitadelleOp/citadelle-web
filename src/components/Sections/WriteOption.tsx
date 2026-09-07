@@ -64,31 +64,43 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
       // For MVP, if market.expiry is an ISO string, we parse it. If not, we just use 7 days from now.
       const expiryTimestamp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);
 
-      // 1. Approve ERC20
-      console.log('Requesting ERC20 Approval...');
-      const approveHash = await writeContractAsync({
-        account: address as `0x${string}`,
-        chain: citadelleNetwork,
+      // 1. Check & Approve ERC20
+      console.log('Checking ERC20 Allowance...');
+      const currentAllowance = await publicClient?.readContract({
         address: market.collateralToken as `0x${string}`,
         abi: ERC20_ABI,
-        functionName: 'approve',
-        args: [ENGINE_CONTRACT_ADDRESS, marginRequired]
-      });
-      console.log('Approval Hash:', approveHash);
-      if (publicClient) {
-        setModalState({ isOpen: true, type: 'info', title: 'Waiting for Confirmation', message: 'Waiting for approval transaction to be mined...' });
-        try {
-          await publicClient.waitForTransactionReceipt({ 
-            hash: approveHash,
-            confirmations: 1,
-            timeout: 60000 // 60 seconds timeout
-          });
-        } catch (error: any) {
-          if (error.message && error.message.includes('Timed out')) {
-            throw new Error('Approval transaction is stuck. Please check your wallet to Speed Up or Cancel it.');
+        functionName: 'allowance',
+        args: [address, ENGINE_CONTRACT_ADDRESS]
+      } as any) as bigint;
+
+      if (currentAllowance < marginRequired) {
+        console.log('Requesting ERC20 Approval...');
+        const approveHash = await writeContractAsync({
+          account: address as `0x${string}`,
+          chain: citadelleNetwork,
+          address: market.collateralToken as `0x${string}`,
+          abi: ERC20_ABI,
+          functionName: 'approve',
+          args: [ENGINE_CONTRACT_ADDRESS, marginRequired]
+        });
+        console.log('Approval Hash:', approveHash);
+        if (publicClient) {
+          setModalState({ isOpen: true, type: 'info', title: 'Waiting for Confirmation', message: 'Waiting for approval transaction to be mined... (Please do not close this window)' });
+          try {
+            await publicClient.waitForTransactionReceipt({ 
+              hash: approveHash,
+              confirmations: 1,
+              timeout: 300000 // 5 minutes timeout
+            });
+          } catch (error: any) {
+            if (error.message && error.message.includes('Timed out')) {
+              throw new Error('Approval transaction is stuck. Please check your wallet to Speed Up or Cancel it.');
+            }
+            throw error;
           }
-          throw error;
         }
+      } else {
+        console.log('Allowance sufficient. Skipping approve.');
       }
 
       // 2. Write Option
