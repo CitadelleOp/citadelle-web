@@ -68,7 +68,8 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
       const decimals = Number(tokenDecimals) || 18;
       console.log('Token Decimals:', decimals);
 
-      const marginRequiredNumeric = isSynthetic ? quantity * 500 : quantity * market.strike;
+      // Calculate margin: 10% of notional value (quantity * strike) for synthetic, or full strike.
+      const marginRequiredNumeric = isSynthetic ? quantity * (market.strike * 0.1) : quantity * market.strike;
       const marginRequired = parseUnits(marginRequiredNumeric.toString(), decimals);
       const premiumWanted = parseUnits(premiumPrice.toString(), decimals);
       const expiryTimestamp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);

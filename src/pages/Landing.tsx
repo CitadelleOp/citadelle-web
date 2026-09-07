@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { BeamsBackground } from "../components/BeamsBackground";
 
 function Logo({ size = 26 }: { size?: number }) {
   return (
@@ -25,69 +26,79 @@ const MARKET_DATA = [
   { symbol: "MSTR", price: "$1,342.11", change: "+5.12%", positive: true },
 ];
 
-
 export default function Landing() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-color)" }}>
-      {/* HERO SECTION */}
+      {/* SECTION 1: HERO */}
       <section style={{ 
+        position: "relative",
         display: "flex", 
         flexDirection: "column", 
         justifyContent: "center", 
         alignItems: "center",
-        padding: "100px 20px 60px",
+        padding: "120px 20px 80px",
         textAlign: "center",
-        background: "radial-gradient(circle at 50% -20%, rgba(255,255,255,0.05) 0%, transparent 60%)"
+        background: "radial-gradient(circle at 50% -20%, rgba(94,234,212,0.08) 0%, transparent 60%)",
+        overflow: "hidden"
       }}>
-        <div style={{ 
-          display: 'inline-block',
-          padding: '4px 12px',
+        <BeamsBackground beamCount={12} color="rgba(255, 255, 255, 0.15)" />
+        
+        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={{ 
+            display: 'inline-block',
+            padding: '4px 12px',
           border: '1px solid var(--border-color)',
           borderRadius: '999px',
-          fontSize: '0.8rem',
-          letterSpacing: '0.05em',
+          fontSize: '0.75rem',
+          letterSpacing: '0.1em',
           textTransform: 'uppercase',
-          marginBottom: '2rem',
+          marginBottom: '2.5rem',
           color: 'var(--text-secondary)'
         }}>
           Live on Robinhood Chain
         </div>
 
         <h1 style={{ 
-          fontSize: "clamp(2.5rem, 6vw, 4.5rem)", 
-          fontWeight: 600, 
-          letterSpacing: "-0.03em",
+          fontSize: "clamp(3rem, 7vw, 5.5rem)", 
+          fontWeight: 700, 
+          letterSpacing: "0.02em",
           marginBottom: "1.5rem",
           color: "var(--text-primary)",
           lineHeight: 1.1,
-          maxWidth: "900px"
+          maxWidth: "1000px",
+          textTransform: "uppercase"
         }}>
-          Trade options and perpetuals<br/>on tokenized equities.
+          Trade Options<br/>
+          On Tokenized<br/>
+          Equities.
         </h1>
         
         <p style={{ 
-          fontSize: "clamp(1.125rem, 2vw, 1.35rem)", 
+          fontSize: "clamp(1.125rem, 2vw, 1.25rem)", 
           color: "var(--text-secondary)", 
           marginBottom: "3rem",
           maxWidth: "700px",
           lineHeight: 1.6
         }}>
-          Institutional derivatives infrastructure built natively on the Robinhood Chain. High leverage, deep liquidity, and zero counterparty risk.
+          The first decentralized options protocol for US equities. Write calls & puts, earn premium, or hedge your portfolio — all settled in USDG on the Robinhood Chain.
         </p>
 
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
-          <Link to="/terminal" className="btn-primary" style={{ textDecoration: "none", padding: "1rem 2rem", fontSize: "1rem" }}>
-            Launch App
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center", marginBottom: "3rem" }}>
+          <Link to="/terminal" className="btn-primary" style={{ textDecoration: "none", padding: "1rem 2.5rem", fontSize: "1rem", backgroundColor: "var(--accent-green)", color: "#000", fontWeight: 600, borderRadius: "999px" }}>
+            Launch Terminal
           </Link>
-          <a href="/docs" className="btn-secondary" style={{ textDecoration: "none", padding: "1rem 2rem", fontSize: "1rem" }}>
+          <a href="/docs" className="btn-secondary" style={{ textDecoration: "none", padding: "1rem 2.5rem", fontSize: "1rem", borderRadius: "999px" }}>
             Read Docs
           </a>
         </div>
 
-
+        <div className="font-mono" style={{ fontSize: "0.85rem", color: "var(--text-secondary)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+          7 MARKETS &nbsp;&middot;&nbsp; USDG SETTLED &nbsp;&middot;&nbsp; PYTH ORACLES &nbsp;&middot;&nbsp; 0.4s BLOCKS
+        </div>
+        </div>
       </section>
 
-      {/* LIVE MARKET STRIP */}
+      {/* SECTION 2: LIVE MARKET STRIP */}
       <section style={{ 
         borderTop: "1px solid var(--border-color)", 
         borderBottom: "1px solid var(--border-color)",
@@ -99,7 +110,7 @@ export default function Landing() {
         <div className="marquee-container">
           {MARKET_DATA.map((market, i) => (
             <div key={i} style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
-              <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>{market.symbol}</span>
+              <span style={{ fontWeight: 600, fontSize: "1.1rem", textTransform: "uppercase" }}>{market.symbol}</span>
               <span className="font-mono" style={{ fontSize: "1.1rem" }}>{market.price}</span>
               <span className={`font-mono ${market.change === "--%" ? 'text-secondary' : market.positive ? 'text-positive' : 'text-negative'}`} style={{ fontSize: "1.1rem" }}>
                 {market.change}
@@ -108,7 +119,7 @@ export default function Landing() {
           ))}
           {MARKET_DATA.map((market, i) => (
             <div key={i + 'clone'} style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
-              <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>{market.symbol}</span>
+              <span style={{ fontWeight: 600, fontSize: "1.1rem", textTransform: "uppercase" }}>{market.symbol}</span>
               <span className="font-mono" style={{ fontSize: "1.1rem" }}>{market.price}</span>
               <span className={`font-mono ${market.change === "--%" ? 'text-secondary' : market.positive ? 'text-positive' : 'text-negative'}`} style={{ fontSize: "1.1rem" }}>
                 {market.change}
@@ -118,150 +129,168 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CORE ENGINES */}
+      {/* SECTION 3: HOW IT WORKS */}
       <section style={{ padding: "120px 20px" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <div style={{ marginBottom: "4rem" }}>
+            <h2 style={{ fontSize: "2.5rem", fontWeight: 700, letterSpacing: "0.02em", textTransform: "uppercase" }}>
+              How Citadelle Works.
+            </h2>
+          </div>
           
-          {/* OPTIONS */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center', marginBottom: '120px' }}>
-            <div>
-              <div style={{ color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.85rem', marginBottom: '1rem' }}>Engine 01</div>
-              <h2 style={{ fontSize: '3rem', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>Options.</h2>
-              <p style={{ fontSize: '1.125rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '2rem' }}>
-                Trade European Calls and Puts on tokenized US equities. Cash-settled in USDC with live pricing fed directly from the Pyth Network. Construct complex payoffs without holding the underlying asset.
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem', color: 'var(--text-primary)' }}>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ color: 'var(--accent-green)' }}>✓</span> USDC Cash Settlement</li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ color: 'var(--accent-green)' }}>✓</span> Live Pyth Oracles</li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ color: 'var(--accent-green)' }}>✓</span> No Exercise Risk</li>
-              </ul>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+            <div style={{ padding: '2.5rem', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-color-secondary)' }}>
+              <div className="font-mono" style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '1rem' }}>01</div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Write an Option</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Deposit USDG collateral into the Citadelle Vault. Choose your asset, set the strike price, expiry date, and the premium you want to earn. Your collateral is locked until settlement.</p>
             </div>
-            <div style={{ background: 'var(--bg-color-secondary)', border: '1px solid var(--border-color)', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
-                <span>NVDA 25 SEP 190 CALL</span>
-                <span className="font-mono text-positive">PREMIUM: $4.82</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div><div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>DELTA</div><div className="font-mono">0.58</div></div>
-                <div><div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>GAMMA</div><div className="font-mono">0.031</div></div>
-                <div><div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>THETA</div><div className="font-mono">-0.14</div></div>
-                <div><div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>VEGA</div><div className="font-mono">0.22</div></div>
-              </div>
+            
+            <div style={{ padding: '2.5rem', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-color-secondary)' }}>
+              <div className="font-mono" style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '1rem' }}>02</div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Match a Buyer</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Buyers browse available options on the marketplace. They pay your asking premium in USDG to take the other side of the trade. No order book — direct peer-to-peer matching.</p>
+            </div>
+            
+            <div style={{ padding: '2.5rem', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-color-secondary)' }}>
+              <div className="font-mono" style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '1rem' }}>03</div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Settle at Expiry</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>At expiration, the Pyth Oracle provides the final price. If the option is in-the-money, the buyer profits. If not, the writer keeps the full premium and collateral. Fully automated, no manual exercise.</p>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* PERPETUALS */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '4rem', alignItems: 'center' }}>
-            <div style={{ order: 2 }}>
-              <div style={{ color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.85rem', marginBottom: '1rem' }}>Engine 02</div>
-              <h2 style={{ fontSize: '3rem', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>Perpetuals.</h2>
-              <p style={{ fontSize: '1.125rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '2rem' }}>
-                Trade Long and Short with up to 10x leverage. Benefit from isolated margin, precise liquidation engines, and predictable funding rates to maintain index parity.
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem', color: 'var(--text-primary)' }}>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ color: 'var(--accent-green)' }}>✓</span> Up to 10x Leverage</li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ color: 'var(--accent-green)' }}>✓</span> Isolated Margin</li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ color: 'var(--accent-green)' }}>✓</span> Deterministic Liquidation</li>
-              </ul>
-            </div>
-            <div style={{ order: 1, background: 'var(--bg-color-secondary)', border: '1px solid var(--border-color)', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
-                <span>TSLA-PERP (SHORT)</span>
-                <span className="font-mono text-negative">PNL: -$124.50</span>
+      {/* SECTION 4: COMPARISON */}
+      <section style={{ padding: "0 20px 120px" }}>
+        <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "4rem 2rem", border: "1px solid var(--border-color)", borderRadius: "12px", background: "var(--bg-color-secondary)", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          
+          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', marginBottom: '3rem', maxWidth: '800px' }}>
+            <div className="font-mono" style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', letterSpacing: '0.1em' }}>TRADITIONAL EXCHANGE</div>
+            <div className="font-mono" style={{ color: 'var(--accent-green)', fontSize: '0.85rem', letterSpacing: '0.1em' }}>ON CITADELLE</div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', maxWidth: '800px' }}>
+            {[
+              ['Broker Required', 'Wallet Only'],
+              ['KYC / Restricted', 'Permissionless'],
+              ['Market Hours Only', '24/7 Trading'],
+              ['T+2 Settlement', 'Instant On-Chain'],
+              ['Counterparty Risk', 'Smart Contract Secured']
+            ].map(([left, right], i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: 'var(--text-secondary)', textDecoration: 'line-through', opacity: 0.5, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{left}</div>
+                <div style={{ color: 'var(--text-secondary)', margin: '0 1rem' }}>→</div>
+                <div style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: 'var(--accent-green)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', textAlign: 'right' }}>{right}</div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div><div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>ENTRY PRICE</div><div className="font-mono">$350.21</div></div>
-                <div><div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>MARK PRICE</div><div className="font-mono">$352.12</div></div>
-                <div><div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>LIQUIDATION</div><div className="font-mono text-negative">$385.00</div></div>
-                <div><div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>MARGIN RATIO</div><div className="font-mono">15.4%</div></div>
-              </div>
-            </div>
+            ))}
           </div>
 
         </div>
       </section>
 
-      {/* THE STACK */}
+
+      {/* SECTION 6: THE STACK */}
       <section style={{ padding: "100px 20px", background: "var(--bg-color-secondary)", borderTop: "1px solid var(--border-color)", borderBottom: "1px solid var(--border-color)" }}>
         <div style={{ maxWidth: "1000px", margin: "0 auto", textAlign: 'center' }}>
-          <h2 style={{ fontSize: "2.5rem", fontWeight: 600, marginBottom: "4rem", letterSpacing: "-0.02em" }}>
-            The Citadelle Stack
+          <h2 style={{ fontSize: "2.5rem", fontWeight: 700, marginBottom: "4rem", letterSpacing: "0.02em", textTransform: 'uppercase' }}>
+            The Citadelle Stack.
           </h2>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center' }}>
-            <div style={{ width: '100%', maxWidth: '600px', padding: '1.5rem', border: '1px solid var(--border-color)', background: 'var(--bg-color)', position: 'relative' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>EXECUTION</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>Citadelle Smart Contracts</div>
+            <div style={{ width: '100%', maxWidth: '600px', padding: '1.5rem', border: '1px solid var(--border-color)', background: 'var(--bg-color)', borderRadius: '12px' }}>
+              <div className="font-mono" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', letterSpacing: '0.1em', marginBottom: '12px' }}>EXECUTION</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '0.02em' }}>Citadelle Smart Contracts</div>
             </div>
             
             <div style={{ height: '40px', width: '1px', background: 'var(--border-color)' }}></div>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', width: '100%', maxWidth: '600px' }}>
-              <div style={{ padding: '1.5rem', border: '1px solid var(--border-color)', background: 'var(--bg-color)' }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>ORACLE</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>Pyth Network</div>
+              <div style={{ padding: '1.5rem', border: '1px solid var(--border-color)', background: 'var(--bg-color)', borderRadius: '12px' }}>
+                <div className="font-mono" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', letterSpacing: '0.1em', marginBottom: '12px' }}>ORACLE</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 600, letterSpacing: '0.02em' }}>Pyth Network</div>
               </div>
-              <div style={{ padding: '1.5rem', border: '1px solid var(--border-color)', background: 'var(--bg-color)' }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>SETTLEMENT</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>USDC</div>
+              <div style={{ padding: '1.5rem', border: '1px solid var(--border-color)', background: 'var(--bg-color)', borderRadius: '12px' }}>
+                <div className="font-mono" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', letterSpacing: '0.1em', marginBottom: '12px' }}>SETTLEMENT</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 600, letterSpacing: '0.02em' }}>USDG</div>
               </div>
             </div>
 
             <div style={{ height: '40px', width: '1px', background: 'var(--border-color)' }}></div>
             
-            <div style={{ width: '100%', maxWidth: '600px', padding: '1.5rem', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.02)' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>INFRASTRUCTURE</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Robinhood Chain</div>
-              <div className="font-mono" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '8px' }}>Block Time: 0.4s</div>
+            <div style={{ width: '100%', maxWidth: '600px', padding: '1.5rem', border: '1px solid var(--accent-green)', background: 'rgba(94,234,212,0.05)', borderRadius: '12px' }}>
+              <div className="font-mono" style={{ fontSize: '0.85rem', color: 'var(--accent-green)', letterSpacing: '0.1em', marginBottom: '12px' }}>INFRASTRUCTURE</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '0.02em' }}>Robinhood Chain</div>
+              <div className="font-mono" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '12px' }}>Block Time: 0.4s</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* INSTITUTIONAL FEATURES */}
+      {/* SECTION 7: PROTOCOL FEATURES */}
       <section style={{ padding: "120px 20px" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "2.5rem", fontWeight: 600, marginBottom: "4rem", letterSpacing: "-0.02em", textAlign: "center" }}>
-            Institutional Grade
-          </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
-            <div style={{ padding: '2rem', border: '1px solid var(--border-color)' }}>
-              <div style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-              </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Low Latency</h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Settling on the Robinhood Chain ensures trades execute instantly with negligible transaction costs.</p>
+            <div style={{ padding: '2rem', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-color-secondary)' }}>
+              <div className="font-mono" style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>01</div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Self-Custodial</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>No brokers, no intermediaries. Your wallet is your account. Full control over collateral at all times.</p>
             </div>
-            <div style={{ padding: '2rem', border: '1px solid var(--border-color)' }}>
-              <div style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-              </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Self-Custodial</h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>No brokers, no intermediaries. Your keys, your trades. Full control over your collateral at all times.</p>
+            <div style={{ padding: '2rem', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-color-secondary)' }}>
+              <div className="font-mono" style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>02</div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pyth Oracle Pricing</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Real-time price feeds from the Pyth Network ensure accurate, manipulation-resistant settlement prices.</p>
             </div>
-            <div style={{ padding: '2rem', border: '1px solid var(--border-color)' }}>
-              <div style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-              </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Deterministic Risk</h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Fully onchain liquidation engines and transparent margin rules mean you always know your risk limits.</p>
+            <div style={{ padding: '2rem', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-color-secondary)' }}>
+              <div className="font-mono" style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>03</div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>USDG Cash Settlement</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>All options are cash-settled in USDG. No physical delivery of underlying assets required.</p>
             </div>
-            <div style={{ padding: '2rem', border: '1px solid var(--border-color)' }}>
-              <div style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-              </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem' }}>24/7 Markets</h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Equities never sleep onchain. Trade US stocks outside of standard market hours seamlessly.</p>
+            <div style={{ padding: '2rem', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-color-secondary)' }}>
+              <div className="font-mono" style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>04</div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Robinhood Chain</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>Sub-second block times and negligible gas fees make derivatives trading fast and affordable.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* SECTION 8: STATS BAR & CTA */}
+      <section style={{ background: "var(--bg-color-secondary)", borderTop: "1px solid var(--border-color)" }}>
+        <div style={{ borderBottom: "1px solid var(--border-color)" }}>
+          <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "1.5rem 20px", display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "2rem" }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <span className="font-mono" style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', letterSpacing: '0.1em' }}>MARKETS</span>
+              <span className="font-mono" style={{ fontSize: '1.25rem', fontWeight: 600 }}>7</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <span className="font-mono" style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', letterSpacing: '0.1em' }}>COLLATERAL</span>
+              <span className="font-mono" style={{ fontSize: '1.25rem', fontWeight: 600 }}>USDG</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <span className="font-mono" style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', letterSpacing: '0.1em' }}>ORACLE</span>
+              <span className="font-mono" style={{ fontSize: '1.25rem', fontWeight: 600 }}>PYTH</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <span className="font-mono" style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', letterSpacing: '0.1em' }}>CHAIN</span>
+              <span className="font-mono" style={{ fontSize: '1.25rem', fontWeight: 600 }}>ROBINHOOD</span>
+            </div>
+          </div>
+        </div>
+        
+        <div style={{ padding: "120px 20px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <h2 style={{ fontSize: "clamp(2rem, 5vw, 4rem)", fontWeight: 700, letterSpacing: "0.02em", textTransform: "uppercase", marginBottom: "3rem", maxWidth: "800px" }}>
+            Trade options on tokenized equities.
+          </h2>
+          <Link to="/terminal" className="btn-primary" style={{ textDecoration: "none", padding: "1.25rem 3rem", fontSize: "1.125rem", backgroundColor: "var(--accent-green)", color: "#000", fontWeight: 600, borderRadius: "999px" }}>
+            Launch Terminal
+          </Link>
+        </div>
+      </section>
+
+      {/* SECTION 9: FOOTER */}
       <footer style={{ 
-        marginTop: "auto",
         borderTop: "1px solid var(--border-color)",
-        background: "var(--bg-color-secondary)",
+        background: "var(--bg-color)",
         padding: "3rem 2rem", 
         display: "flex", 
         flexWrap: "wrap", 
@@ -272,7 +301,7 @@ export default function Landing() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
             <Logo size={24} />
-            <span style={{ fontWeight: 600, fontSize: '1.2rem', letterSpacing: "-0.02em" }}>Citadelle</span>
+            <span style={{ fontWeight: 700, fontSize: '1.2rem', letterSpacing: "0.05em", textTransform: "uppercase" }}>Citadelle</span>
           </span>
           <span className="font-mono" style={{ fontSize: "0.85rem", letterSpacing: "0.05em", color: 'var(--text-secondary)' }}>
             $CTDL · {import.meta.env.VITE_CA ? (
@@ -290,6 +319,14 @@ export default function Landing() {
         
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <a 
+            href="/docs" 
+            style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.2s', fontSize: '0.9rem' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+          >
+            Docs
+          </a>
+          <a 
             href="https://x.com/CitadelleOpt" 
             target="_blank" 
             rel="noreferrer" 
@@ -297,13 +334,16 @@ export default function Landing() {
             onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
             onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
           </a>
-          <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)", maxWidth: 400, textAlign: "right", lineHeight: 1.6 }}>
-            Derivatives involve risk. Access is restricted by jurisdiction.<br/>Nothing here is financial advice.
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '999px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)' }}></div>
+            <span className="font-mono" style={{ fontSize: "0.75rem", color: "var(--text-secondary)", letterSpacing: "0.05em" }}>
+              LIVE ON ROBINHOOD CHAIN
+            </span>
+          </div>
         </div>
       </footer>
     </div>
