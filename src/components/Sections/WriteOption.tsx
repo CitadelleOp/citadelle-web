@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FC } from 'react';
 import { useAccount, useWriteContract, usePublicClient, useChainId } from 'wagmi';
-import { parseUnits } from 'viem';
+import { parseUnits, formatUnits } from 'viem';
 
 import { TxModal } from '../common/TxModal';
 import { citadelleNetwork } from '../../providers/WalletContextProvider';
@@ -53,58 +53,107 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
     try {
       if (!market) throw new Error("No market selected.");
 
+      const collateralToken = market.collateralToken as `0x${string}`;
       const isSynthetic = market.isSynthetic;
       const marginRequiredNumeric = isSynthetic ? quantity * 500000 : quantity * market.strike;
-      // Assuming 18 decimals for testnet collateral
       const marginRequired = parseUnits(marginRequiredNumeric.toString(), 18);
       const premiumWanted = parseUnits(premiumPrice.toString(), 18);
-      // Wait! Expiry is a string 'dd/mm/yyyy'. We need timestamp.
-      // But we just use Date.parse(market.expiry) if it's stored in ISO in DB, but MarketList formats it.
-      // Actually, we can fetch original expiry from market object if available, otherwise just use a dummy future timestamp for testnet MVP if we can't parse it.
-      // For MVP, if market.expiry is an ISO string, we parse it. If not, we just use 7 days from now.
       const expiryTimestamp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);
 
-      // 1. Check & Approve ERC20
-      console.log('Checking ERC20 Allowance...');
+      console.log('=== WRITE OPTION DEBUG ===');
+      console.log('Collateral Token:', collateralToken);
+      console.log('Engine Contract:', ENGINE_CONTRACT_ADDRESS);
+      console.log('User Address:', address);
+      console.log('Chain ID (wallet):', chainId, '| Chain ID (target):', targetChainId);
+      console.log('Margin Required:', formatUnits(marginRequired, 18), 'tokens');
+      console.log('Premium Wanted:', formatUnits(premiumWanted, 18), 'tokens');
+
+      // === STEP 0: Check user balance FIRST ===
+      console.log('\n[Step 0] Checking user token balance...');
+      const userBalance = await publicClient?.readContract({
+        address: collateralToken,
+        abi: ERC20_ABI as any,
+        functionName: 'balanceOf',
+        args: [address]
+      } as any) as bigint;
+      
+      console.log('User Balance:', formatUnits(userBalance || 0n, 18), 'tokens');
+      console.log('Required:', formatUnits(marginRequired, 18), 'tokens');
+      
+      if (!userBalance || userBalance < marginRequired) {
+        throw new Error(
+          `Insufficient token balance. You have ${formatUnits(userBalance || 0n, 18)} but need ${formatUnits(marginRequired, 18)} tokens to write this option. Please fund your wallet with the collateral token first.`
+        );
+      }
+      console.log('✅ Balance sufficient!');
+
+      // === STEP 1: Check & Approve ERC20 ===
+      console.log('\n[Step 1] Checking ERC20 Allowance...');
       const currentAllowance = await publicClient?.readContract({
-        address: market.collateralToken as `0x${string}`,
-        abi: ERC20_ABI,
+        address: collateralToken,
+        abi: ERC20_ABI as any,
         functionName: 'allowance',
         args: [address, ENGINE_CONTRACT_ADDRESS]
       } as any) as bigint;
 
-      if (currentAllowance < marginRequired) {
-        console.log('Requesting ERC20 Approval...');
+      console.log('Current Allowance:', formatUnits(currentAllowance || 0n, 18));
+      console.log('Needed:', formatUnits(marginRequired, 18));
+
+      if (!currentAllowance || currentAllowance < marginRequired) {
+        console.log('⚠️ Allowance insufficient. Requesting approval...');
+        
+        setModalState({ isOpen: true, type: 'info', title: 'Step 1/2: Approve Token', message: 'Please confirm the Approve transaction in your wallet...' });
+
         const approveHash = await writeContractAsync({
           account: address as `0x${string}`,
           chain: citadelleNetwork,
-          address: market.collateralToken as `0x${string}`,
+          address: collateralToken,
           abi: ERC20_ABI,
           functionName: 'approve',
           args: [ENGINE_CONTRACT_ADDRESS, marginRequired]
         });
-        console.log('Approval Hash:', approveHash);
+        console.log('Approval TX sent! Hash:', approveHash);
+
+        // Update modal to show we're waiting for mining
+        setModalState({ isOpen: true, type: 'info', title: 'Step 1/2: Confirming Approval', message: `Approval TX sent! Waiting for blockchain confirmation...\n\nTX: ${approveHash.slice(0, 10)}...${approveHash.slice(-8)}` });
+
         if (publicClient) {
-          setModalState({ isOpen: true, type: 'info', title: 'Waiting for Confirmation', message: 'Waiting for approval transaction to be mined... (Please do not close this window)' });
+          console.log('Waiting for approval receipt...');
+          const startTime = Date.now();
+          
           try {
-            await publicClient.waitForTransactionReceipt({ 
+            const receipt = await publicClient.waitForTransactionReceipt({ 
               hash: approveHash,
               confirmations: 1,
-              timeout: 300000 // 5 minutes timeout
+              timeout: 120000 // 2 minutes — if it takes longer, something is wrong
             });
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            console.log(`✅ Approval confirmed in ${elapsed}s! Block: ${receipt.blockNumber}, Status: ${receipt.status}`);
+            
+            if (receipt.status === 'reverted') {
+              throw new Error('Approval transaction was reverted by the blockchain. You may not have enough gas (RBH) to pay for the transaction.');
+            }
           } catch (error: any) {
-            if (error.message && error.message.includes('Timed out')) {
-              throw new Error('Approval transaction is stuck. Please check your wallet to Speed Up or Cancel it.');
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            console.error(`❌ Approval wait failed after ${elapsed}s:`, error.message);
+            
+            if (error.message && (error.message.includes('Timed out') || error.message.includes('timeout'))) {
+              throw new Error(
+                `Approval is taking too long (${elapsed}s). Your transaction may be stuck due to low gas fee. ` +
+                `Check your wallet to Speed Up or Cancel it.\n\nTX Hash: ${approveHash}`
+              );
             }
             throw error;
           }
         }
       } else {
-        console.log('Allowance sufficient. Skipping approve.');
+        console.log('✅ Allowance sufficient. Skipping approve step.');
       }
 
-      // 2. Write Option
-      console.log('Writing Option...');
+      // === STEP 2: Write Option ===
+      console.log('\n[Step 2] Writing Option on-chain...');
+      setModalState({ isOpen: true, type: 'info', title: 'Step 2/2: Write Option', message: 'Please confirm the Write Option transaction in your wallet...' });
+
       const txHash = await writeContractAsync({
         account: address as `0x${string}`,
         chain: citadelleNetwork,
@@ -112,7 +161,7 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         abi: OPTIONS_ENGINE_ABI,
         functionName: 'writeOption',
         args: [
-          market.collateralToken as `0x${string}`,
+          collateralToken,
           market.symbol,
           parseUnits(market.strike.toString(), 18),
           BigInt(expiryTimestamp),
@@ -121,7 +170,7 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         ]
       });
 
-      console.log('✅ Transaction successful! TX Hash:', txHash);
+      console.log('✅ Write Option TX successful! Hash:', txHash);
       setModalState({ 
         isOpen: true, 
         type: 'success', 
@@ -133,11 +182,18 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
       setPremium('');
     } catch (err: any) {
       console.error('❌ Transaction error details:', err.message || err);
+      console.error('Full error object:', err);
+      
+      // Parse user rejection
+      const isUserRejection = err.message?.includes('User rejected') || err.message?.includes('user rejected') || err.message?.includes('ACTION_REJECTED');
+      
       setModalState({ 
         isOpen: true, 
         type: 'error', 
-        title: 'Transaction Failed', 
-        message: err.shortMessage || err.message || 'Transaction failed!' 
+        title: isUserRejection ? 'Transaction Cancelled' : 'Transaction Failed', 
+        message: isUserRejection 
+          ? 'You cancelled the transaction in your wallet.' 
+          : (err.shortMessage || err.message || 'Transaction failed!') 
       });
     } finally {
       setLoading(false);
