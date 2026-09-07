@@ -131,13 +131,13 @@ export function Terminal() {
             onClick={() => { setOrderAction('sell'); setOrderType('call'); }}
             style={{ padding: '0.75rem', backgroundColor: orderAction === 'sell' && orderType === 'call' ? 'rgba(94, 234, 212, 0.1)' : 'transparent', color: orderAction === 'sell' && orderType === 'call' ? '#5EEAD4' : '#A3A3A3', border: orderAction === 'sell' && orderType === 'call' ? '1px solid #5EEAD4' : '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 'bold', transition: 'all 0.2s' }}
           >
-            Sell Call
+            Write Call
           </button>
           <button 
             onClick={() => { setOrderAction('sell'); setOrderType('put'); }}
             style={{ padding: '0.75rem', backgroundColor: orderAction === 'sell' && orderType === 'put' ? 'rgba(94, 234, 212, 0.1)' : 'transparent', color: orderAction === 'sell' && orderType === 'put' ? '#5EEAD4' : '#A3A3A3', border: orderAction === 'sell' && orderType === 'put' ? '1px solid #5EEAD4' : '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 'bold', transition: 'all 0.2s' }}
           >
-            Sell Put
+            Write Put
           </button>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>

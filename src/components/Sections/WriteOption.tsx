@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FC } from 'react';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, usePublicClient } from 'wagmi';
 import { parseUnits } from 'viem';
 
 import { TxModal } from '../common/TxModal';
@@ -25,6 +25,7 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
 
   const { isConnected, address } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
 
   const handleWrite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +67,10 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         args: [ENGINE_CONTRACT_ADDRESS, marginRequired]
       });
       console.log('Approval Hash:', approveHash);
+      if (publicClient) {
+        setModalState({ isOpen: true, type: 'info', title: 'Waiting for Confirmation', message: 'Waiting for approval transaction to be mined...' });
+        await publicClient.waitForTransactionReceipt({ hash: approveHash });
+      }
 
       // 2. Write Option
       console.log('Writing Option...');
@@ -200,7 +205,16 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         opacity: (loading || !market || Number(qty) <= 0 || Number(premium) <= 0) ? 0.5 : 1,
         transition: 'all 0.2s',
       }}>
-        {loading ? 'WAITING FOR WALLET...' : `Sell ${qty || 0} ${market?.symbol?.split('/')[0] || ''} ${market?.strike || ''} ${optionType === 'call' ? 'Call' : 'Put'}`}
+        {loading 
+          ? 'WAITING FOR WALLET...' 
+          : !market 
+            ? 'Select a Market'
+            : Number(qty) <= 0 
+              ? 'Enter Quantity' 
+              : Number(premium) <= 0 
+                ? 'Enter Premium'
+                : `Write ${qty} ${market.symbol.split('/')[0]} $${market.strike.toLocaleString()} ${optionType === 'call' ? 'Call' : 'Put'}`
+        }
       </button>
 
       <TxModal

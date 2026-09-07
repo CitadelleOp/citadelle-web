@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FC } from 'react';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, usePublicClient } from 'wagmi';
 import { parseUnits } from 'viem';
 
 import { TxModal } from '../common/TxModal';
@@ -25,6 +25,7 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
   
   const { isConnected, address } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
   const { apiUrl, network } = useNetwork();
 
   const premiumPerOption = market && market.premiumAsk ? market.premiumAsk : 0;
@@ -71,6 +72,10 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
         args: [ENGINE_CONTRACT_ADDRESS, premiumWanted]
       });
       console.log('Approval Hash:', approveHash);
+      if (publicClient) {
+        setModalState({ isOpen: true, type: 'info', title: 'Waiting for Confirmation', message: 'Waiting for approval transaction to be mined...' });
+        await publicClient.waitForTransactionReceipt({ hash: approveHash });
+      }
 
       // 2. Buy Option
       console.log('Buying Option...');
@@ -206,7 +211,14 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
         opacity: (loading || !market || Number(qty) <= 0) ? 0.5 : 1,
         transition: 'all 0.2s',
       }}>
-        {loading ? 'WAITING FOR WALLET...' : `Buy ${qty || 0} ${market?.symbol?.split('/')[0] || ''} ${market?.strike || ''} ${optionType === 'call' ? 'Call' : 'Put'}`}
+        {loading 
+          ? 'WAITING FOR WALLET...' 
+          : !market 
+            ? 'Select a Market'
+            : Number(qty) <= 0 
+              ? 'Enter Quantity' 
+              : `Buy ${qty} ${market.symbol.split('/')[0]} $${market.strike.toLocaleString()} ${optionType === 'call' ? 'Call' : 'Put'}`
+        }
       </button>
 
       <TxModal

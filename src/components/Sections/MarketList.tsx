@@ -32,7 +32,11 @@ export const MarketList: FC<MarketListProps> = ({ onSelectMarket, selectedMarket
   const [loading, setLoading] = useState(true);
   const [pythPrices, setPythPrices] = useState<Record<string, number>>({});
   const { network, apiUrl } = useNetwork();
-  const hermesRef = useRef(new HermesClient("https://hermes.pyth.network"));
+  const hermesRef = useRef<HermesClient | null>(null);
+
+  useEffect(() => {
+    hermesRef.current = new HermesClient(`${apiUrl}/pyth`);
+  }, [apiUrl]);
 
   useEffect(() => {
     async function fetchMarkets() {
@@ -46,7 +50,7 @@ export const MarketList: FC<MarketListProps> = ({ onSelectMarket, selectedMarket
         
         let apiMarkets: Market[] = json.data.map((m: any) => ({
           ...m,
-          id: m.address,
+          id: m.id || m.address || '',
           expiry: new Date(m.expiry).toLocaleDateString('en-GB'),
           totalLiquidity: 0, // Placeholder
           premiumAsk: 0 // Placeholder
@@ -87,7 +91,11 @@ export const MarketList: FC<MarketListProps> = ({ onSelectMarket, selectedMarket
       if (feedIds.length === 0) return;
 
       try {
-        const parsedData = await hermesRef.current.getLatestPriceUpdates(feedIds);
+        const params = new URLSearchParams();
+        feedIds.forEach(id => params.append('ids[]', id as string));
+
+        const res = await fetch(`${apiUrl}/pyth/v2/updates/price/latest?${params.toString()}`);
+        const parsedData = await res.json();
         const newPrices: Record<string, number> = {};
         
         if (parsedData && parsedData.parsed) {
