@@ -135,31 +135,29 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
           const startTime = Date.now();
           
           try {
-            // Fallback: manually poll for allowance change (more reliable on some testnets than waitForTransactionReceipt)
-            let isApproved = false;
-            for (let i = 0; i < 45; i++) { // Max wait ~90s
-              await new Promise(res => setTimeout(res, 2000)); // Poll every 2 seconds
-              const newAllowance = await publicClient.readContract({
-                address: collateralToken,
-                abi: ERC20_ABI as any,
-                functionName: 'allowance',
-                args: [address, ENGINE_CONTRACT_ADDRESS]
-              } as any) as bigint;
-              
-              if (newAllowance >= marginRequired) {
-                isApproved = true;
-                break;
-              }
-            }
+            // Since we are using a Mainnet RPC (Alchemy), we can rely on waitForTransactionReceipt.
+            // The previous manual polling often hit RPC caches, causing the allowance to appear unchanged.
+            const receipt = await publicClient.waitForTransactionReceipt({ 
+              hash: approveHash,
+              confirmations: 1,
+              timeout: 120000 // 2 minutes timeout
+            });
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            console.log(`✅ Approval confirmed in ${elapsed}s! Block: ${receipt.blockNumber}, Status: ${receipt.status}`);
             
-            if (!isApproved) {
-              throw new Error('Approval transaction timeout. The network might be congested, or the RPC is lagging. If the transaction was successful in your wallet, please try again.');
+            if (receipt.status === 'reverted') {
+              throw new Error('Approval transaction was reverted by the blockchain. You may not have enough gas (RBH) to pay for the transaction.');
             }
-            
-            console.log(`✅ Approval confirmed by polling allowance in ${((Date.now() - startTime) / 1000).toFixed(1)}s!`);
           } catch (error: any) {
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
             console.error(`❌ Approval wait failed after ${elapsed}s:`, error.message);
+            
+            if (error.message && (error.message.includes('Timed out') || error.message.includes('timeout'))) {
+              throw new Error(
+                `Approval is taking too long (${elapsed}s). Your transaction may be stuck due to low gas fee. ` +
+                `Check your wallet to Speed Up or Cancel it.\n\nTX Hash: ${approveHash}`
+              );
+            }
             throw error;
           }
         }
