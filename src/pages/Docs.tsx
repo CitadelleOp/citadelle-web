@@ -4,10 +4,8 @@ import { Link } from 'react-router-dom';
 import { SilkBackground } from '../components/SilkBackground';
 import { LogoText } from '../components/Navbar';
 
-const MINT = "#97FCE4";
-const INK = "#0A2622";
-const CREAM = "#E9F7F0";
-const MUT_INK = "rgba(10,38,34,0.62)";
+const INK = "#FFFFFF";
+const MUT_INK = "var(--text-secondary)";
 
 const SERIF = "'Fraunces', Georgia, 'Times New Roman', serif";
 const SANS = "-apple-system, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
@@ -18,8 +16,8 @@ export const Docs: FC = () => {
   }, []);
 
   return (
-    <div style={{ color: INK, fontFamily: SANS, minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
-      <SilkBackground color={INK} bgColor={CREAM} speed={1.2} intensity={1.5} scale={2.5} />
+    <div style={{ color: INK, fontFamily: SANS, minHeight: '100vh', position: 'relative', overflow: 'hidden', background: "transparent" }}>
+      <SilkBackground color={"#333333"} bgColor={"#000000"} speed={1.2} intensity={1.5} scale={2.5} />
       
       <div style={{
         position: 'relative',
@@ -31,7 +29,7 @@ export const Docs: FC = () => {
         fontFamily: SANS,
         lineHeight: '1.8'
       }}>
-        <div className="glass-panel" style={{ padding: '3rem', borderRadius: '24px', background: '#fff', border: '1px solid rgba(10,38,34,0.08)', boxShadow: '0 10px 40px rgba(10,38,34,0.05)' }}>
+        <div className="glass-panel" style={{ padding: '3rem', borderRadius: '24px', background: 'transparent', backdropFilter: 'blur(8px)', border: '1px solid var(--border-color)', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
           <h1 style={{ fontFamily: SERIF, fontSize: '2.5rem', fontWeight: 400, color: INK, marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
             <LogoText /> Documentation
           </h1>
@@ -39,14 +37,14 @@ export const Docs: FC = () => {
             Learn how to trade options, provide liquidity, and integrate with the <LogoText /> protocol.
           </p>
 
-          <h2 style={{ borderBottom: '1px solid rgba(10,38,34,0.1)', paddingBottom: '0.5rem', marginBottom: '1.5rem', color: INK, fontFamily: SERIF, fontWeight: 500 }}>
+          <h2 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.5rem', color: INK, fontFamily: SERIF, fontWeight: 500 }}>
             Overview
           </h2>
           <p style={{ marginBottom: '2rem', color: MUT_INK }}>
             <LogoText /> is a decentralized derivatives protocol built on the Robinhood Chain. It allows users to trade fully-collateralized call and put options on various assets (Crypto and US Stocks) settled entirely in USDC.
           </p>
 
-          <h2 style={{ borderBottom: '1px solid rgba(10,38,34,0.1)', paddingBottom: '0.5rem', marginBottom: '1.5rem', color: INK, fontFamily: SERIF, fontWeight: 500 }}>
+          <h2 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.5rem', color: INK, fontFamily: SERIF, fontWeight: 500 }}>
             Trading Options (Buying)
           </h2>
           <p style={{ marginBottom: '1rem', color: MUT_INK }}>
@@ -58,7 +56,7 @@ export const Docs: FC = () => {
             <li style={{ marginBottom: '0.5rem' }}><strong>Max Loss:</strong> Limited to the premium paid.</li>
           </ul>
 
-          <h2 style={{ borderBottom: '1px solid rgba(10,38,34,0.1)', paddingBottom: '0.5rem', marginBottom: '1.5rem', color: INK, fontFamily: SERIF, fontWeight: 500 }}>
+          <h2 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.5rem', color: INK, fontFamily: SERIF, fontWeight: 500 }}>
             Writing Options (Providing Liquidity)
           </h2>
           <p style={{ marginBottom: '1rem', color: MUT_INK }}>
@@ -70,7 +68,7 @@ export const Docs: FC = () => {
             <li style={{ marginBottom: '0.5rem' }}><strong>Profit:</strong> You keep the premium if the option expires out-of-the-money.</li>
           </ul>
 
-          <h2 style={{ borderBottom: '1px solid rgba(10,38,34,0.1)', paddingBottom: '0.5rem', marginBottom: '1.5rem', color: INK, fontFamily: SERIF, fontWeight: 500 }}>
+          <h2 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.5rem', color: INK, fontFamily: SERIF, fontWeight: 500 }}>
             Settlement & Oracles
           </h2>
           <p style={{ marginBottom: '2rem', color: MUT_INK }}>
@@ -80,8 +78,8 @@ export const Docs: FC = () => {
           <div style={{ marginTop: '4rem', textAlign: 'center' }}>
             <Link to="/terminal" style={{
               fontFamily: SANS, fontSize: 16, textDecoration: "none", padding: "15px 34px", borderRadius: 999,
-              background: MINT, color: INK,
-              border: `1.5px solid ${MINT}`, display: "inline-block", fontWeight: 500,
+              background: "#ffffff", color: "#000000",
+              border: `1.5px solid #ffffff`, display: "inline-block", fontWeight: 500,
             }}>
               OPEN TERMINAL
             </Link>
