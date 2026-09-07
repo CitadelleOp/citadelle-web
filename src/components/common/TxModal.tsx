@@ -52,7 +52,36 @@ export const TxModal: FC<TxModalProps> = ({ isOpen, type, title, message, txSign
         border: `1px solid ${activeColor}55`,
         boxShadow: `0 4px 20px ${activeColor}22`,
         textAlign: 'center',
+        position: 'relative'
       }}>
+        
+        {/* ALWAYS VISIBLE CLOSE BUTTON */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '1rem',
+            right: '1rem',
+            background: 'transparent',
+            border: 'none',
+            color: '#A3A3A3',
+            cursor: 'pointer',
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'color 0.2s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.color = '#FFF'}
+          onMouseOut={(e) => e.currentTarget.style.color = '#A3A3A3'}
+          aria-label="Close modal"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
         <style>
           {`
             @keyframes spin-tx {

@@ -145,7 +145,7 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
             const receipt = await publicClient.waitForTransactionReceipt({ 
               hash: approveHash,
               confirmations: 1,
-              timeout: 120000 // 2 minutes
+              timeout: 60000 // 1 minute timeout to fail fast and trigger fallback
             });
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
             console.log(`✅ Approval confirmed in ${elapsed}s! Block: ${receipt.blockNumber}, Status: ${receipt.status}`);
@@ -155,15 +155,27 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
             }
           } catch (error: any) {
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            console.error(`❌ Approval wait failed after ${elapsed}s:`, error.message);
+            console.error(`⚠️ Receipt fetch failed after ${elapsed}s, trying allowance fallback...`, error.message);
             
-            if (error.message && (error.message.includes('Timed out') || error.message.includes('timeout'))) {
-              throw new Error(
-                `Approval is taking too long (${elapsed}s). Your transaction may be stuck due to low gas fee. ` +
-                `Check your wallet to Speed Up or Cancel it.\n\nTX Hash: ${approveHash}`
-              );
+            // FALLBACK: If RPC is lagging or timed out, manually check if allowance increased
+            const newAllowance = await publicClient.readContract({
+              address: collateralToken,
+              abi: ERC20_ABI as any,
+              functionName: 'allowance',
+              args: [address, ENGINE_CONTRACT_ADDRESS]
+            } as any) as bigint;
+
+            if (newAllowance >= premiumWanted) {
+              console.log('✅ Fallback successful! Allowance has increased.');
+            } else {
+              if (error.message && (error.message.includes('Timed out') || error.message.includes('timeout'))) {
+                throw new Error(
+                  `Approval is taking too long (${elapsed}s). Your transaction may be pending or the RPC is out of sync. ` +
+                  `Check your wallet. If it's successful, try again.\n\nTX Hash: ${approveHash}`
+                );
+              }
+              throw error;
             }
-            throw error;
           }
         }
       } else {
