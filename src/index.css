@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --bg-color: #000000;
+  --bg-color-secondary: #0A0A0A;
+  --text-primary: #F5F5F5;
+  --text-secondary: #A3A3A3;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --accent-green: #5EEAD4; /* Positive / Up */
+  --accent-red: #F87171; /* Negative / Down */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Geist', 'IBM Plex Sans', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography utilities */
+.font-mono {
+  font-variant-numeric: tabular-nums;
+  font-family: 'Inter', 'Geist', 'IBM Plex Sans', sans-serif; /* Keep same font, just tabular */
+}
+
+.text-positive {
+  color: var(--accent-green) !important;
+}
+
+.text-negative {
+  color: var(--accent-red) !important;
+}
+
+/* Layout utilities */
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Clean Button styles */
+.btn-primary {
+  background-color: var(--text-primary);
+  color: var(--bg-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  border: none;
+  font-family: 'Inter', 'Geist', 'IBM Plex Sans', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  font-family: 'Inter', 'Geist', 'IBM Plex Sans', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Marquee Animation */
+.marquee-container {
+  display: inline-flex;
+  gap: 4rem;
+  padding: 0 2rem;
+  min-width: max-content;
+  animation: marquee 20s linear infinite;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-50% - 2rem));
+  }
+}
