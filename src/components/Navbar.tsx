@@ -38,10 +38,10 @@ export const Navbar: FC<{ variant?: string }> = () => {
         </Link>
         
         <div className="navbar-links">
-          <Link to="/terminal">Trade</Link>
+          {/* <Link to="/terminal">Trade</Link>
           <Link to="/terminal">Options</Link>
           <Link to="/terminal">Perpetuals</Link>
-          <Link to="/terminal">Portfolio</Link>
+          <Link to="/terminal">Portfolio</Link> */}
         </div>
         
         <div className="navbar-actions">
@@ -77,10 +77,10 @@ export const Navbar: FC<{ variant?: string }> = () => {
       {isMobileMenuOpen && (
         <div className="mobile-menu-overlay">
           <div className="mobile-menu-content">
-            <Link to="/terminal" onClick={() => setIsMobileMenuOpen(false)}>Trade</Link>
+            {/* <Link to="/terminal" onClick={() => setIsMobileMenuOpen(false)}>Trade</Link>
             <Link to="/terminal" onClick={() => setIsMobileMenuOpen(false)}>Options</Link>
             <Link to="/terminal" onClick={() => setIsMobileMenuOpen(false)}>Perpetuals</Link>
-            <Link to="/terminal" onClick={() => setIsMobileMenuOpen(false)}>Portfolio</Link>
+            <Link to="/terminal" onClick={() => setIsMobileMenuOpen(false)}>Portfolio</Link> */}
           </div>
         </div>
       )}
