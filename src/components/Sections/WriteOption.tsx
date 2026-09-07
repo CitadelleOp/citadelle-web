@@ -68,8 +68,8 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
       const decimals = Number(tokenDecimals) || 18;
       console.log('Token Decimals:', decimals);
 
-      // Calculate margin: 10% of notional value (quantity * strike) for synthetic, or full strike.
-      const marginRequiredNumeric = isSynthetic ? quantity * (market.strike * 0.1) : quantity * market.strike;
+      // Calculate margin: 1% of notional value (quantity * strike) for synthetic, or full strike.
+      const marginRequiredNumeric = isSynthetic ? quantity * (market.strike * 0.01) : quantity * market.strike;
       const marginRequired = parseUnits(marginRequiredNumeric.toString(), decimals);
       const premiumWanted = parseUnits(premiumPrice.toString(), decimals);
       const expiryTimestamp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);
@@ -255,7 +255,7 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <span style={{ color: '#A3A3A3', fontSize: '0.75rem' }}>Collateral Required</span>
-          <span style={{ color: '#FFF', fontSize: '0.75rem' }}>{((Number(qty) || 0) * (market?.isSynthetic ? 500 : market?.strike || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDG</span>
+          <span style={{ color: '#FFF', fontSize: '0.75rem' }}>{((Number(qty) || 0) * (market?.isSynthetic ? (market.strike * 0.01) : (market?.strike || 1))).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDG</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <span style={{ color: '#A3A3A3', fontSize: '0.75rem' }}>Max profit</span>
