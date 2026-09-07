@@ -21,7 +21,7 @@ export const AssetList: FC<AssetListProps> = ({ onSelectAsset, selectedAssetId, 
   const [activeTab, setActiveTab] = useState<'crypto' | 'stocks'>('stocks');
   const [assetMap, setAssetMap] = useState<Record<string, Asset>>({});
   const [assets, setAssets] = useState<any[]>([]);
-  const { apiUrl } = useNetwork();
+  const { apiUrl, network } = useNetwork();
   const hasAutoSelected = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
   const hermesRef = useRef<HermesClient | null>(null);
@@ -29,7 +29,7 @@ export const AssetList: FC<AssetListProps> = ({ onSelectAsset, selectedAssetId, 
   useEffect(() => {
     async function fetchAssets() {
       try {
-        const res = await fetch(`${apiUrl}/assets`);
+        const res = await fetch(`${apiUrl}/assets?network=${network}`);
         const json = await res.json();
         if (json.success && json.data) {
           setAssets(json.data);
@@ -45,7 +45,7 @@ export const AssetList: FC<AssetListProps> = ({ onSelectAsset, selectedAssetId, 
       }
     }
     fetchAssets();
-  }, [apiUrl]);
+  }, [apiUrl, network]);
 
   useEffect(() => {
     if (assets.length === 0) return;

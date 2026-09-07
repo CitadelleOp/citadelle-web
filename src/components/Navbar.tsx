@@ -49,6 +49,18 @@ export const Navbar: FC<{ variant?: string }> = () => {
         </Link>
         
         <div className="navbar-links">
+          <a 
+            href="https://x.com/CitadelleOpt" 
+            target="_blank" 
+            rel="noreferrer" 
+            style={{ color: '#ffffff', opacity: 0.7, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center' }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
           {/* <Link to="/terminal">Trade</Link>
           <Link to="/terminal">Options</Link>
           <Link to="/terminal">Perpetuals</Link>

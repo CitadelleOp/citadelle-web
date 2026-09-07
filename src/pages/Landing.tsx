@@ -290,7 +290,7 @@ export default function Landing() {
         
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <a 
-            href="#" 
+            href="https://x.com/CitadelleOpt" 
             target="_blank" 
             rel="noreferrer" 
             style={{ color: 'var(--text-secondary)', transition: 'color 0.2s' }}
