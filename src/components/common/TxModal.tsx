@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useNetwork } from '../../contexts/NetworkContext';
+
 
 interface TxModalProps {
   isOpen: boolean;
@@ -11,8 +11,7 @@ interface TxModalProps {
 }
 
 export const TxModal: FC<TxModalProps> = ({ isOpen, type, title, message, txSignature, onClose }) => {
-  const { network } = useNetwork();
-  
+
   if (!isOpen) return null;
 
   const handleCopy = () => {
