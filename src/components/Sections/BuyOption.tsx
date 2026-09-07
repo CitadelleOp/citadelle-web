@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FC } from 'react';
-import { useAccount, useWriteContract, usePublicClient } from 'wagmi';
+import { useAccount, useWriteContract, usePublicClient, useChainId } from 'wagmi';
 import { parseUnits } from 'viem';
 
 import { TxModal } from '../common/TxModal';
@@ -24,6 +24,7 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
   });
   
   const { isConnected, address } = useAccount();
+  const chainId = useChainId();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
   const { apiUrl, network } = useNetwork();
@@ -35,11 +36,15 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
   const handleTrade = async (e: React.FormEvent) => {
     e.preventDefault();
     if (quantity <= 0) {
-      setModalState({ isOpen: true, type: 'error', title: 'Invalid Input', message: 'Please enter a valid quantity.' });
+      setModalState({ isOpen: true, type: 'error', title: 'Invalid Quantity', message: 'Please enter a valid quantity.' });
       return;
     }
     if (!isConnected || !address) {
       setModalState({ isOpen: true, type: 'error', title: 'Wallet Not Connected', message: 'Please connect your wallet first.' });
+      return;
+    }
+    if (chainId !== 46630) {
+      setModalState({ isOpen: true, type: 'error', title: 'Wrong Network', message: 'Please switch your wallet to the Robinhood Testnet before trading.' });
       return;
     }
     setLoading(true);
@@ -74,7 +79,18 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
       console.log('Approval Hash:', approveHash);
       if (publicClient) {
         setModalState({ isOpen: true, type: 'info', title: 'Waiting for Confirmation', message: 'Waiting for approval transaction to be mined...' });
-        await publicClient.waitForTransactionReceipt({ hash: approveHash });
+        try {
+          await publicClient.waitForTransactionReceipt({ 
+            hash: approveHash,
+            confirmations: 1,
+            timeout: 60000 // 60 seconds timeout
+          });
+        } catch (error: any) {
+          if (error.message && error.message.includes('Timed out')) {
+            throw new Error('Approval transaction is stuck. Please check your wallet to Speed Up or Cancel it.');
+          }
+          throw error;
+        }
       }
 
       // 2. Buy Option

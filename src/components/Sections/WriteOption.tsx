@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FC } from 'react';
-import { useAccount, useWriteContract, usePublicClient } from 'wagmi';
+import { useAccount, useWriteContract, usePublicClient, useChainId } from 'wagmi';
 import { parseUnits } from 'viem';
 
 import { TxModal } from '../common/TxModal';
@@ -24,6 +24,7 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
   });
 
   const { isConnected, address } = useAccount();
+  const chainId = useChainId();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
 
@@ -38,6 +39,10 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
     }
     if (!isConnected || !address) {
       setModalState({ isOpen: true, type: 'error', title: 'Wallet Not Connected', message: 'Please connect your wallet first.' });
+      return;
+    }
+    if (chainId !== 46630) {
+      setModalState({ isOpen: true, type: 'error', title: 'Wrong Network', message: 'Please switch your wallet to the Robinhood Testnet before trading.' });
       return;
     }
     setLoading(true);
@@ -69,7 +74,18 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
       console.log('Approval Hash:', approveHash);
       if (publicClient) {
         setModalState({ isOpen: true, type: 'info', title: 'Waiting for Confirmation', message: 'Waiting for approval transaction to be mined...' });
-        await publicClient.waitForTransactionReceipt({ hash: approveHash });
+        try {
+          await publicClient.waitForTransactionReceipt({ 
+            hash: approveHash,
+            confirmations: 1,
+            timeout: 60000 // 60 seconds timeout
+          });
+        } catch (error: any) {
+          if (error.message && error.message.includes('Timed out')) {
+            throw new Error('Approval transaction is stuck. Please check your wallet to Speed Up or Cancel it.');
+          }
+          throw error;
+        }
       }
 
       // 2. Write Option

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FC } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useChainId, useSwitchChain } from 'wagmi';
 import { Link } from 'react-router-dom';
 import './Navbar.css';
 
@@ -12,12 +12,20 @@ export const Navbar: FC<{ variant?: string }> = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
+  
+  const isWrongNetwork = isConnected && chainId !== 46630;
 
   const handleConnect = () => {
     if (isConnected) {
-      disconnect();
+      if (isWrongNetwork && switchChain) {
+        switchChain({ chainId: 46630 });
+      } else {
+        disconnect();
+      }
     } else {
       if (connectors.length > 0) {
         connect({ connector: connectors[0] });
@@ -47,9 +55,14 @@ export const Navbar: FC<{ variant?: string }> = () => {
         <div className="navbar-actions">
           <button 
             onClick={handleConnect}
-            className="wallet-btn" 
+            className="wallet-btn"
+            style={isWrongNetwork ? { backgroundColor: '#F87171', color: '#000', border: 'none' } : {}}
           >
-            {isConnected ? `[ ${address?.slice(0, 6)}...${address?.slice(-4)} ]` : '[ Connect Wallet ]'}
+            {!isConnected 
+              ? '[ Connect Wallet ]' 
+              : isWrongNetwork 
+                ? '⚠️ Switch to Robinhood Testnet' 
+                : `[ ${address?.slice(0, 6)}...${address?.slice(-4)} ]`}
           </button>
           
           <button 
