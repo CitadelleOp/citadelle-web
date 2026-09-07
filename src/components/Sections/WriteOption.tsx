@@ -41,8 +41,11 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
       setModalState({ isOpen: true, type: 'error', title: 'Wallet Not Connected', message: 'Please connect your wallet first.' });
       return;
     }
-    if (chainId !== 46630) {
-      setModalState({ isOpen: true, type: 'error', title: 'Wrong Network', message: 'Please switch your wallet to the Robinhood Testnet before trading.' });
+    const targetChainId = Number(import.meta.env.VITE_NETWORK_ID);
+    const networkName = import.meta.env.VITE_NETWORK_NAME || 'the correct network';
+    
+    if (chainId !== targetChainId) {
+      setModalState({ isOpen: true, type: 'error', title: 'Wrong Network', message: `Please switch your wallet to ${networkName} before trading.` });
       return;
     }
     setLoading(true);

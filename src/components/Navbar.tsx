@@ -17,12 +17,15 @@ export const Navbar: FC<{ variant?: string }> = () => {
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
   
-  const isWrongNetwork = isConnected && chainId !== 46630;
+  const targetChainId = Number(import.meta.env.VITE_NETWORK_ID);
+  const networkName = import.meta.env.VITE_NETWORK_NAME || 'the correct network';
+  
+  const isWrongNetwork = isConnected && chainId !== targetChainId;
 
   const handleConnect = () => {
     if (isConnected) {
       if (isWrongNetwork && switchChain) {
-        switchChain({ chainId: 46630 });
+        switchChain({ chainId: targetChainId });
       } else {
         disconnect();
       }
@@ -61,7 +64,7 @@ export const Navbar: FC<{ variant?: string }> = () => {
             {!isConnected 
               ? '[ Connect Wallet ]' 
               : isWrongNetwork 
-                ? '⚠️ Switch to Robinhood Testnet' 
+                ? `⚠️ Switch to ${networkName}` 
                 : `[ ${address?.slice(0, 6)}...${address?.slice(-4)} ]`}
           </button>
           
