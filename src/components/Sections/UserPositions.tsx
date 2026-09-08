@@ -55,7 +55,7 @@ export const UserPositions: FC = () => {
         const msg = JSON.parse(event.data);
         const d = msg.data;
         if (!d) return;
-        const sym = (d.s as string).replace('USDT', '');
+        const sym = d.s as string; // Keep full symbol (e.g. BTCUSDT) to match pos.symbol
         setPrices((prev) => ({ ...prev, [sym]: parseFloat(d.c) }));
       };
 
