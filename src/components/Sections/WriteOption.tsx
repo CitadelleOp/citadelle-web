@@ -30,8 +30,10 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
 
   const handleWrite = async (e: React.FormEvent) => {
     e.preventDefault();
-    const quantity = parseFloat(qty);
-    const premiumPrice = parseFloat(premium);
+    const sanitizedQty = String(qty).replace(',', '.');
+    const sanitizedPremium = String(premium).replace(',', '.');
+    const quantity = parseFloat(sanitizedQty);
+    const premiumPrice = parseFloat(sanitizedPremium);
     
     if (isNaN(quantity) || quantity <= 0 || isNaN(premiumPrice) || premiumPrice <= 0) {
       setModalState({ isOpen: true, type: 'error', title: 'Invalid Input', message: 'Please enter a valid quantity and premium.' });
