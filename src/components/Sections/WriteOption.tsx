@@ -5,7 +5,7 @@ import { parseUnits, formatUnits } from 'viem';
 
 import { TxModal } from '../common/TxModal';
 import { citadelleNetwork } from '../../providers/WalletContextProvider';
-import { ENGINE_CONTRACT_ADDRESS, OPTIONS_ENGINE_ABI, ERC20_ABI } from '../../lib/contracts';
+import { ENGINE_CONTRACT_ADDRESS, OPTIONS_ENGINE_ABI, ERC20_ABI, VAULT_CONTRACT_ADDRESS, CITADELLE_VAULT_ABI } from '../../lib/contracts';
 
 interface WriteOptionProps {
   market: any | null;
@@ -91,70 +91,102 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
       console.log('Margin Required:', formatUnits(marginRequired, decimals), 'tokens');
       console.log('Premium Wanted:', formatUnits(premiumWanted, decimals), 'tokens');
 
-      // === STEP 0: Check user balance FIRST ===
-      console.log('\n[Step 0] Checking user token balance...');
-      const userBalance = await publicClient?.readContract({
-        address: collateralToken,
-        abi: ERC20_ABI as any,
-        functionName: 'balanceOf',
-        args: [address]
+      // === STEP 0: Check Vault Balance ===
+      console.log('\n[Step 0] Checking Vault Balance...');
+      const vaultBalance = await publicClient?.readContract({
+        address: VAULT_CONTRACT_ADDRESS,
+        abi: CITADELLE_VAULT_ABI as any,
+        functionName: 'collateralBalances',
+        args: [address, collateralToken]
       } as any) as bigint;
+
+      const lockedMargin = await publicClient?.readContract({
+        address: VAULT_CONTRACT_ADDRESS,
+        abi: CITADELLE_VAULT_ABI as any,
+        functionName: 'lockedMargins',
+        args: [address, collateralToken]
+      } as any) as bigint;
+
+      const availableVaultBalance = (vaultBalance || 0n) - (lockedMargin || 0n);
       
-      console.log('User Balance:', formatUnits(userBalance || 0n, decimals), 'tokens');
-      console.log('Required:', formatUnits(marginRequired, decimals), 'tokens');
-      
-      if (!userBalance || userBalance < marginRequired) {
-        throw new Error(
-          `Insufficient token balance. You have ${formatUnits(userBalance || 0n, decimals)} but need ${formatUnits(marginRequired, decimals)} tokens to write this option. Please fund your wallet with the collateral token first.`
-        );
+      let depositRequired = 0n;
+      if (availableVaultBalance < marginRequired) {
+        depositRequired = marginRequired - availableVaultBalance;
       }
-      console.log('✅ Balance sufficient!');
 
-      // === STEP 1: Check & Approve ERC20 ===
-      console.log('\n[Step 1] Checking ERC20 Allowance...');
-      const currentAllowance = await publicClient?.readContract({
-        address: collateralToken,
-        abi: ERC20_ABI as any,
-        functionName: 'allowance',
-        args: [address, ENGINE_CONTRACT_ADDRESS]
-      } as any) as bigint;
+      console.log('Available Vault Balance:', formatUnits(availableVaultBalance, decimals));
+      console.log('Deposit Required:', formatUnits(depositRequired, decimals));
 
-      console.log('Current Allowance:', formatUnits(currentAllowance || 0n, decimals));
-      console.log('Needed:', formatUnits(marginRequired, decimals));
-
-      if (!currentAllowance || currentAllowance < marginRequired) {
-        console.log('⚠️ Allowance insufficient. Requesting approval...');
+      if (depositRequired > 0n) {
+        console.log('\n[Step 1] Deposit Required. Checking user wallet balance...');
+        const userBalance = await publicClient?.readContract({
+          address: collateralToken,
+          abi: ERC20_ABI as any,
+          functionName: 'balanceOf',
+          args: [address]
+        } as any) as bigint;
         
-        setModalState({ isOpen: true, type: 'info', title: 'Step 1/2: Approve Token', message: 'Please confirm the Approve transaction in your wallet...' });
+        console.log('Wallet Balance:', formatUnits(userBalance || 0n, decimals));
 
-        const approveHash = await writeContractAsync({
+        if (!userBalance || userBalance < depositRequired) {
+          throw new Error(`Insufficient wallet balance. You need to deposit ${formatUnits(depositRequired, decimals)} tokens into the Vault, but your wallet only has ${formatUnits(userBalance || 0n, decimals)}.`);
+        }
+        console.log('✅ Wallet balance sufficient for deposit!');
+
+        console.log('\n[Step 2] Checking ERC20 Allowance for Vault...');
+        const currentAllowance = await publicClient?.readContract({
+          address: collateralToken,
+          abi: ERC20_ABI as any,
+          functionName: 'allowance',
+          args: [address, VAULT_CONTRACT_ADDRESS]
+        } as any) as bigint;
+
+        console.log('Current Allowance:', formatUnits(currentAllowance || 0n, decimals));
+        console.log('Needed:', formatUnits(depositRequired, decimals));
+
+        if (!currentAllowance || currentAllowance < depositRequired) {
+          console.log('⚠️ Allowance insufficient. Requesting approval...');
+          setModalState({ isOpen: true, type: 'info', title: 'Step 1/3: Approve Token', message: 'Please confirm the Approve transaction in your wallet...' });
+
+          const approveHash = await writeContractAsync({
+            account: address as `0x${string}`,
+            chain: citadelleNetwork,
+            address: collateralToken,
+            abi: ERC20_ABI,
+            functionName: 'approve',
+            args: [VAULT_CONTRACT_ADDRESS, depositRequired]
+          });
+
+          setModalState({ isOpen: true, type: 'info', title: 'Step 1/3: Confirming Approval', message: `Approval TX sent! Waiting for blockchain confirmation...\n\nTX: ${approveHash.slice(0, 10)}...${approveHash.slice(-8)}` });
+          if (publicClient) await publicClient.waitForTransactionReceipt({ hash: approveHash });
+          console.log('✅ Approval confirmed!');
+        } else {
+          console.log('✅ Allowance sufficient. Skipping approve step.');
+        }
+
+        console.log('\n[Step 3] Depositing into Vault...');
+        setModalState({ isOpen: true, type: 'info', title: 'Step 2/3: Deposit to Vault', message: 'Please confirm the Deposit transaction in your wallet to fund your Citadelle Vault...' });
+        
+        const depositHash = await writeContractAsync({
           account: address as `0x${string}`,
           chain: citadelleNetwork,
-          address: collateralToken,
-          abi: ERC20_ABI,
-          functionName: 'approve',
-          args: [ENGINE_CONTRACT_ADDRESS, marginRequired]
+          address: VAULT_CONTRACT_ADDRESS,
+          abi: CITADELLE_VAULT_ABI,
+          functionName: 'depositCollateral',
+          args: [collateralToken, depositRequired]
         });
-        console.log('Approval TX sent! Hash:', approveHash);
 
-        // Update modal to show we're waiting for mining
-        setModalState({ isOpen: true, type: 'info', title: 'Step 1/2: Confirming Approval', message: `Approval TX sent! Waiting for blockchain confirmation...\n\nTX: ${approveHash.slice(0, 10)}...${approveHash.slice(-8)}` });
-
-        if (publicClient) {
-          // Since Robinhood Chain is extremely fast (0.4s block time), we can assume the transaction succeeds (optimistic UI).
-          // We only wait 3 seconds to let the blockchain process it, then immediately proceed to Step 2.
-          // This prevents the modal from getting stuck if the Alchemy RPC is slow to index the block.
-          console.log('Optimistically waiting 3 seconds for fast-block confirmation...');
-          await new Promise(res => setTimeout(res, 3000));
-          console.log('✅ Moving to Step 2 optimistically!');
-        }
+        setModalState({ isOpen: true, type: 'info', title: 'Step 2/3: Confirming Deposit', message: `Deposit TX sent! Waiting for blockchain confirmation...\n\nTX: ${depositHash.slice(0, 10)}...${depositHash.slice(-8)}` });
+        if (publicClient) await publicClient.waitForTransactionReceipt({ hash: depositHash });
+        console.log('✅ Deposit confirmed!');
       } else {
-        console.log('✅ Allowance sufficient. Skipping approve step.');
+        console.log('✅ Vault balance already sufficient. Skipping deposit steps.');
       }
 
-      // === STEP 2: Write Option ===
-      console.log('\n[Step 2] Writing Option on-chain...');
-      setModalState({ isOpen: true, type: 'info', title: 'Step 2/2: Write Option', message: 'Please confirm the Write Option transaction in your wallet...' });
+      // === FINAL STEP: Write Option ===
+      console.log('\n[Final Step] Writing Option on-chain...');
+      const stepTitle = depositRequired > 0n ? 'Step 3/3: Write Option' : 'Step 1/1: Write Option';
+      setModalState({ isOpen: true, type: 'info', title: stepTitle, message: 'Please confirm the Write Option transaction in your wallet...' });
 
       const txHash = await writeContractAsync({
         account: address as `0x${string}`,

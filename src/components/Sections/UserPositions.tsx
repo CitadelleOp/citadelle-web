@@ -69,11 +69,29 @@ export const UserPositions: FC = () => {
 
       try {
         setLoading(true);
-        // TODO: Replace with Wagmi useReadContract to fetch EVM positions
-        // For now, setting empty array as a placeholder for EVM migration
-        setPositions([]);
+        const res = await fetch(`${apiUrl}/portfolio/${address}?network=${network}`);
+        const data = await res.json();
+        
+        if (data.success && data.data && data.data.positions) {
+          const formattedPositions = data.data.positions.map((p: any) => ({
+             id: p.id,
+             type: p.positionType === 'BOUGHT' ? 'LONG' : 'SHORT',
+             market: p.market?.symbol || 'UNKNOWN',
+             symbol: p.market?.symbol || 'UNKNOWN',
+             strike: Number(p.market?.strike || 0),
+             size: Number(p.quantity || 0),
+             premium: Number(p.market?.premiumAsk || 0),
+             pythFeedId: p.market?.pythFeedId,
+             marketId: p.marketId,
+             pnl: null,
+          }));
+          setPositions(formattedPositions);
+        } else {
+          setPositions([]);
+        }
       } catch (err) {
         console.error('Error fetching positions:', err);
+        setPositions([]);
       } finally {
         setLoading(false);
       }

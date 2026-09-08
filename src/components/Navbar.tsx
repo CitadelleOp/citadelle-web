@@ -50,6 +50,9 @@ export const Navbar: FC<{ variant?: string }> = () => {
         </Link>
         
         <div className="navbar-links">
+          <Link to="/#flagship">Flagship</Link>
+          <Link to="/#stack">Ecosystem</Link>
+          <Link to="/#ownership">Ownership</Link>
           <Link to="/terminal">Trade</Link>
         </div>
         
@@ -103,6 +106,9 @@ export const Navbar: FC<{ variant?: string }> = () => {
       {isMobileMenuOpen && (
         <div className="mobile-menu-overlay">
           <div className="mobile-menu-content">
+            <Link to="/#flagship" onClick={() => setIsMobileMenuOpen(false)}>Flagship</Link>
+            <Link to="/#stack" onClick={() => setIsMobileMenuOpen(false)}>Ecosystem</Link>
+            <Link to="/#ownership" onClick={() => setIsMobileMenuOpen(false)}>Ownership</Link>
             <Link to="/terminal" onClick={() => setIsMobileMenuOpen(false)}>Trade</Link>
           </div>
         </div>
