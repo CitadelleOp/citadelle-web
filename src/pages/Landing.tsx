@@ -401,6 +401,11 @@ export default function Landing() {
           60%  { opacity: 1; }
           100% { opacity: 1; transform: scale(1); }
         }
+        @keyframes live-pulse {
+          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+          70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
         .sp-enter   { display:inline-block; transform-origin:center; animation: sp-enter 1s cubic-bezier(.2,.8,.3,1.2) both; }
         @media (prefers-reduced-motion: reduce) { .sp-enter, .sp-elastic { animation: none; } }
       `}</style>
@@ -417,9 +422,11 @@ export default function Landing() {
           
           {/* LEFT COLUMN */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-            <div style={{ display: "flex", gap: "1rem", marginBottom: '2rem' }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "0.5rem", marginBottom: '2rem' }}>
               <div style={{ 
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
                 padding: '4px 12px',
                 border: `1px solid ${BORDER}`,
                 background: 'transparent',
@@ -430,6 +437,14 @@ export default function Landing() {
                 textTransform: 'uppercase',
                 color: MUTED
               }}>
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  backgroundColor: '#22c55e',
+                  borderRadius: '50%',
+                  display: 'inline-block',
+                  animation: 'live-pulse 2s infinite'
+                }}></span>
                 Live on Robinhood Chain
               </div>
               
