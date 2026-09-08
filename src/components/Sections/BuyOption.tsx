@@ -60,7 +60,7 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
       // Fetch writer address
       console.log('=== BUY OPTION DEBUG ===');
       console.log('Fetching available writer for market:', market.id);
-      const res = await fetch(`${apiUrl}/markets/${market.id}/writers?network=${network}`);
+      const res = await fetch(`${apiUrl}/markets/${market.id}/writers?network=${network}`, { cache: 'no-store' });
       const data = await res.json();
       if (!data.success || !data.data || !data.data.writer) {
         throw new Error("No available writers for this market right now.");
