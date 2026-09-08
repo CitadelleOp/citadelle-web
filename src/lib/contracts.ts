@@ -6,7 +6,8 @@ export const VAULT_CONTRACT_ADDRESS = import.meta.env.VITE_VAULT_CONTRACT_ADDRES
 
 export const OPTIONS_ENGINE_ABI = parseAbi([
   'function writeOption(address collateralToken, string memory marketSymbol, uint256 strikePrice, uint256 expiry, uint256 marginRequired, uint256 premiumWanted) external',
-  'function buyOption(address writer, address collateralToken, string memory marketSymbol, uint256 strikePrice, uint256 expiry, uint256 premium) external'
+  'function buyOption(address writer, address collateralToken, string memory marketSymbol, uint256 strikePrice, uint256 expiry, uint256 premium) external',
+  'function closeOption(string memory positionId, address collateralToken, uint256 marginToUnlock, bytes memory signature) external'
 ]);
 
 export const CITADELLE_VAULT_ABI = parseAbi([

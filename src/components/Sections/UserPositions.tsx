@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FC } from 'react';
 import { HermesClient } from '@pythnetwork/hermes-client';
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract, usePublicClient, useChainId } from 'wagmi';
 import { useNetwork } from '../../contexts/NetworkContext';
-
-
+import { TxModal } from '../common/TxModal';
+import { ENGINE_CONTRACT_ADDRESS, OPTIONS_ENGINE_ABI } from '../../lib/contracts';
 
 interface Position {
   id: string;
@@ -27,7 +27,17 @@ export const UserPositions: FC = () => {
   const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(false);
   const [prices, setPrices] = useState<Record<string, number>>({});
+  const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'success' | 'error' | 'info'; title: string; message: string; txSignature?: string }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: '',
+  });
+
   const { network, apiUrl } = useNetwork();
+  const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
+  const chainId = useChainId();
   const wsRef = useRef<WebSocket | null>(null);
   const hermesRef = useRef(new HermesClient("https://hermes.pyth.network"));
 
@@ -186,14 +196,58 @@ export const UserPositions: FC = () => {
     );
   }
 
-  const handleReclaim = async () => {
+  const handleReclaim = async (position: Position) => {
     if (!isConnected || !address) return;
+    const targetChainId = Number(import.meta.env.VITE_NETWORK_ID);
+    if (chainId !== targetChainId) {
+      setModalState({ isOpen: true, type: 'error', title: 'Wrong Network', message: 'Please switch your wallet to the correct network.' });
+      return;
+    }
+
     try {
-      // TODO: Replace with EVM logic
-      alert('Close position (reclaim collateral) not yet implemented for EVM.');
+      setModalState({ isOpen: true, type: 'info', title: 'Closing Position', message: 'Requesting authorization signature...' });
+
+      // 1. Fetch Signature
+      const sigRes = await fetch(`${apiUrl}/positions/${position.id}/close-signature`, {
+        method: 'POST'
+      });
+      const sigData = await sigRes.json();
+      
+      if (!sigData.success) {
+        throw new Error(sigData.error || 'Failed to get signature');
+      }
+
+      setModalState({ isOpen: true, type: 'info', title: 'Confirm in Wallet', message: 'Please confirm the transaction to close your position.' });
+
+      // 2. Write Contract
+      // @ts-ignore - wagmi type inference issue with dynamic args
+      const txHash = await writeContractAsync({
+        address: ENGINE_CONTRACT_ADDRESS as `0x${string}`,
+        abi: OPTIONS_ENGINE_ABI,
+        functionName: 'closeOption',
+        args: [
+          position.id,
+          sigData.data.collateralToken as `0x${string}`,
+          BigInt(sigData.data.marginToUnlock),
+          sigData.data.signature as `0x${string}`
+        ]
+      });
+
+      setModalState({ isOpen: true, type: 'info', title: 'Processing', message: 'Waiting for blockchain confirmation...', txSignature: txHash });
+
+      // 3. Wait for Confirmation
+      const receipt = await publicClient?.waitForTransactionReceipt({ hash: txHash });
+      if (receipt?.status === 'success') {
+        setModalState({ isOpen: true, type: 'success', title: 'Position Closed', message: 'Margin has been reclaimed successfully.', txSignature: txHash });
+      } else {
+        setModalState({ isOpen: true, type: 'error', title: 'Transaction Failed', message: 'The transaction reverted.' });
+      }
+
     } catch (e: any) {
       console.error(e);
-      alert('Failed to close position.');
+      let errorMsg = e.message || 'Failed to close position.';
+      if (errorMsg.includes('User rejected')) errorMsg = 'Transaction rejected by user.';
+      setModalState({ isOpen: true, type: 'error', title: 'Transaction Failed', message: errorMsg });
     }
   };
 
@@ -257,7 +311,7 @@ export const UserPositions: FC = () => {
                 <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
                   {pos.type === 'SHORT' ? (
                     <button
-                      onClick={() => handleReclaim()}
+                      onClick={() => handleReclaim(pos)}
                       style={{
                         background: 'rgba(248,113,113,0.1)',
                         color: '#F87171',
@@ -280,6 +334,15 @@ export const UserPositions: FC = () => {
           })}
         </tbody>
       </table>
+
+      <TxModal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        txSignature={modalState.txSignature}
+      />
     </div>
   );
 };

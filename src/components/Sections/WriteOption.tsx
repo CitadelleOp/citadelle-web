@@ -249,7 +249,7 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <span style={{ color: '#A3A3A3', fontSize: '0.875rem' }}>Expiry</span>
         <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', minWidth: '120px', justifyContent: 'space-between' }}>
-          <span style={{ color: '#FFF' }}>{market ? market.expiry : '-'}</span>
+          <span style={{ color: '#FFF' }}>{market ? new Date(market.expiry).toLocaleDateString('en-GB') : '-'}</span>
           <span style={{ color: '#A3A3A3', fontSize: '0.6rem' }}>▼</span>
         </div>
       </div>

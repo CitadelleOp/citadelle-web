@@ -50,10 +50,7 @@ export const MarketList: FC<MarketListProps> = ({ onSelectMarket, selectedMarket
         
         let apiMarkets: Market[] = json.data.map((m: any) => ({
           ...m,
-          id: m.id || m.address || '',
-          expiry: new Date(m.expiry).toLocaleDateString('en-GB'),
-          totalLiquidity: 0, // Placeholder
-          premiumAsk: 0 // Placeholder
+          id: m.id || m.address || ''
         }));
 
         setMarkets(apiMarkets);
@@ -197,7 +194,7 @@ export const MarketList: FC<MarketListProps> = ({ onSelectMarket, selectedMarket
                       return price ? `$${price.toFixed(2)}` : '-';
                     })()}
                   </td>
-                  <td data-label="EXPIRY" style={{ padding: '1rem' }}>{mkt.expiry}</td>
+                  <td data-label="EXPIRY" style={{ padding: '1rem' }}>{new Date(mkt.expiry).toLocaleDateString('en-GB')}</td>
                   <td data-label="TYPE" style={{ padding: '1rem', color: isCall ? '#5EEAD4' : '#F87171' }}>{isCall ? 'CALL' : 'PUT'}</td>
                   <td data-label="PREMIUM" style={{ padding: '1rem', textAlign: 'right' }}>${typeof mkt.premiumAsk === 'number' ? mkt.premiumAsk.toFixed(2) : mkt.premiumAsk}</td>
                   <td data-label="LIQ." style={{ padding: '1rem', textAlign: 'right' }}>{mkt.totalLiquidity}</td>
