@@ -80,7 +80,7 @@ export const BuyOption: FC<BuyOptionProps> = ({ market, optionType = 'call' }) =
       console.log('Token Decimals:', decimals);
 
       const premiumWanted = parseUnits(premiumPerOption.toString(), decimals);
-      const expiryTimestamp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);
+      const expiryTimestamp = Math.floor(new Date(market.expiry).getTime() / 1000);
 
       console.log('Collateral Token:', collateralToken);
       console.log('Engine Contract:', ENGINE_CONTRACT_ADDRESS);
