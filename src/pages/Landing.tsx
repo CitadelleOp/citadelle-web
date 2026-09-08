@@ -460,7 +460,7 @@ export default function Landing() {
                     e.currentTarget.style.color = MUTED;
                   }}
                 >
-                  <span style={{ textTransform: 'uppercase' }}>CA: {ctdlCA.slice(0, 6)}...{ctdlCA.slice(-4)}</span>
+                  <span style={{ textTransform: 'uppercase' }}>CA: {ctdlCA}</span>
                   <span>
                     {copied ? (
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -725,7 +725,7 @@ export default function Landing() {
               rel="noreferrer"
               style={{ color: "#FFFFFF", textDecoration: "none" }}
             >
-              CA: {ctdlCA.slice(0, 4)}...{ctdlCA.slice(-4)}
+              CA: {ctdlCA}
             </a>
           ) : "CA SOON"}
         </span>
