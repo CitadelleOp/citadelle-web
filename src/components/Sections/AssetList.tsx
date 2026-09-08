@@ -6,6 +6,7 @@ import { useNetwork } from '../../contexts/NetworkContext';
 export interface Asset {
   id: string;
   symbol: string;
+  type: string;
   price: number;
   change24h: number;
   volume24h: number;
@@ -36,7 +37,7 @@ export const AssetList: FC<AssetListProps> = ({ onSelectAsset, selectedAssetId, 
           const map: Record<string, Asset> = {};
           json.data.forEach((a: any) => {
             const sym = a.symbol;
-            map[sym] = { id: sym, symbol: sym, price: 0, change24h: 0, volume24h: 0 };
+            map[sym] = { id: sym, symbol: sym, type: a.type || 'crypto', price: 0, change24h: 0, volume24h: 0 };
           });
           setAssetMap(map);
         }

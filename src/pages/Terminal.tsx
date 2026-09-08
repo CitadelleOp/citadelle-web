@@ -33,7 +33,7 @@ export function Terminal() {
   const isAfterClose = nyTime >= 16;
   const usMarketClosed = isWeekend || isBeforeOpen || isAfterClose;
   
-  const isCrypto = ['BTC', 'ETH', 'SOL', 'JUP', 'JTO', 'PYTH', 'WIF', 'BONK', 'RAY', 'RENDER'].includes(selectedAsset?.symbol || '');
+  const isCrypto = selectedAsset?.type === 'crypto';
   const showStockBanner = usMarketClosed && selectedAsset && !isCrypto;
 
   return (
