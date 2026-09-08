@@ -68,8 +68,18 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
       const decimals = Number(tokenDecimals) || 18;
       console.log('Token Decimals:', decimals);
 
-      // Calculate margin: 1% of notional value (quantity * strike) for synthetic, or full strike.
-      const marginRequiredNumeric = isSynthetic ? quantity * (market.strike * 0.01) : quantity * market.strike;
+      // Calculate margin: 
+      // - Synthetic: 1% of notional
+      // - Call: 1:1 with underlying (quantity)
+      // - Put: fully collateralized (quantity * strike)
+      let marginRequiredNumeric = 0;
+      if (isSynthetic) {
+        marginRequiredNumeric = quantity * (market.strike * 0.01);
+      } else if (optionType === 'call') {
+        marginRequiredNumeric = quantity;
+      } else {
+        marginRequiredNumeric = quantity * market.strike;
+      }
       const marginRequired = parseUnits(marginRequiredNumeric.toString(), decimals);
       const premiumWanted = parseUnits(premiumPrice.toString(), decimals);
       const expiryTimestamp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);
@@ -234,7 +244,26 @@ export const WriteOption: FC<WriteOptionProps> = ({ market, optionType = 'call' 
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <span style={{ color: '#A3A3A3', fontSize: '0.75rem' }}>Collateral Required</span>
-          <span style={{ color: '#FFF', fontSize: '0.75rem' }}>{((Number(qty) || 0) * (market?.isSynthetic ? (market.strike * 0.01) : (market?.strike || 1))).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDG</span>
+          <span style={{ color: '#FFF', fontSize: '0.75rem' }}>
+            {(() => {
+              const numQty = Number(qty) || 0;
+              let required = 0;
+              let symbol = 'USDG';
+              if (market) {
+                if (market.isSynthetic) {
+                  required = numQty * (market.strike * 0.01);
+                  symbol = 'USDG';
+                } else if (optionType === 'call') {
+                  required = numQty;
+                  symbol = market.symbol.split('/')[0];
+                } else {
+                  required = numQty * market.strike;
+                  symbol = market.symbol.split('/')[1] || 'USDG';
+                }
+              }
+              return `${required.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${symbol}`;
+            })()}
+          </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <span style={{ color: '#A3A3A3', fontSize: '0.75rem' }}>Max profit</span>
